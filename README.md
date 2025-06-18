@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ticketing System Web App
 
-## Getting Started
+A modern, high-performance ticketing system built with Next.js, featuring QR code and barcode scanning capabilities with Google Sheets integration.
 
-First, run the development server:
+## Features
 
+- **3 Scanning Modes**:
+  - **Check-in Mode**: Marks tickets as "redeemed"
+  - **View Mode**: Displays ticket status and history
+  - **Reset Mode**: Resets tickets to "unredeemed" status
+
+- **Ticket Generation**: Bulk generate unique ticket IDs with QR codes and barcodes
+- **Real-time Scanning**: Fast QR code and barcode scanning with instant feedback
+- **Google Sheets Integration**: All ticket data stored in Google Sheets
+- **Print-ready Tickets**: Generate and print tickets with both QR codes and barcodes
+- **Beautiful UI**: Modern, animated interface with glass-morphism effects
+- **Password Protection**: Simple password authentication system
+
+## Setup Instructions
+
+1. **Clone the repository and install dependencies**:
+   ```bash
+   cd ticketing-app
+   npm install
+   ```
+
+2. **Configure Google Sheets**:
+   - Create a new Google Sheet
+   - Set up a Google Cloud service account with Sheets API enabled
+   - Download the service account credentials JSON
+   - Share your Google Sheet with the service account email
+
+3. **Set up environment variables**:
+   Edit the `.env.local` file with your credentials:
+   ```
+   SYSTEM_PASSWORD=your_password_here
+   GOOGLE_SHEETS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+   GOOGLE_SHEETS_CLIENT_EMAIL="your-service-account@project.iam.gserviceaccount.com"
+   GOOGLE_SHEET_ID="your_google_sheet_id"
+   ```
+
+4. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the app**:
+   Open [http://localhost:3000](http://localhost:3000) and login with your password
+
+## Deployment
+
+Deploy to Vercel:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+vercel
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Make sure to add your environment variables in the Vercel dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Login**: Use the password configured in `SYSTEM_PASSWORD`
+2. **Generate Tickets**: Click "Generate" to create new tickets
+3. **Scan Tickets**: Select a mode and start scanning
+4. **View All Tickets**: Click "Manage Tickets" to see all tickets and their status
 
-## Learn More
+## Ticket ID Format
 
-To learn more about Next.js, take a look at the following resources:
+Tickets are generated with the format: `TKT-XXXXXXXX` (8 random alphanumeric characters)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Technologies Used
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Google Sheets API
+- html5-qrcode (scanning)
+- react-qr-code & jsbarcode (generation)

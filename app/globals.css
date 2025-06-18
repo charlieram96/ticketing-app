@@ -24,3 +24,33 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Scanner custom styles */
+#qr-reader__camera_selection {
+  display: none !important;
+}
+
+#qr-reader__camera_permission_button {
+  display: none !important;
+}
+
+#qr-reader__dashboard_section_swaplink {
+  display: none !important;
+}
+
+.scanner-custom {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Print styles */
+@media print {
+  @page {
+    margin: 0.5in;
+  }
+  
+  .print-container {
+    display: block !important;
+  }
+}
