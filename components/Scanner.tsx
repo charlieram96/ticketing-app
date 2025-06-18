@@ -143,9 +143,9 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Mode Selection */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {(['check-in', 'view', 'reset'] as ScanMode[]).map((m) => {
           const config = getModeConfig(m)
           const IconComponent = config.icon
@@ -156,7 +156,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
               <Button
                 onClick={() => setMode(m)}
                 variant={isActive ? "default" : "outline"}
-                className={`h-auto w-full flex-col gap-2 p-4 ${
+                className={`h-auto w-full flex-row sm:flex-col gap-3 sm:gap-2 p-4 justify-start sm:justify-center text-left sm:text-center ${
                   isActive 
                     ? `${config.color} text-white` 
                     : `${config.bgColor} ${config.textColor} hover:${config.bgColor.replace('/10', '/20')}`
@@ -172,18 +172,18 @@ export default function Scanner({ onScanResult }: ScannerProps) {
 
       {/* Scan Type Tabs */}
       <Tabs value={scanType} onValueChange={(value) => setScanType(value as ScanType)} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-white/5">
-          <TabsTrigger value="qr" className="data-[state=active]:bg-purple-600">
+        <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+          <TabsTrigger value="qr" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <QrCode className="mr-2 h-4 w-4" />
             QR Code
           </TabsTrigger>
-          <TabsTrigger value="barcode" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger value="barcode" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Barcode className="mr-2 h-4 w-4" />
             Barcode
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="qr" className="mt-6">
+        <TabsContent value="qr" className="mt-4 sm:mt-6">
           <ScannerInterface 
             isScanning={isScanning}
             isProcessing={isProcessing}
@@ -194,7 +194,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           />
         </TabsContent>
         
-        <TabsContent value="barcode" className="mt-6">
+        <TabsContent value="barcode" className="mt-4 sm:mt-6">
           <ScannerInterface 
             isScanning={isScanning}
             isProcessing={isProcessing}
@@ -235,23 +235,23 @@ function ScannerInterface({
   const IconComponent = config.icon
 
   return (
-    <Card className="border-white/10 bg-black/20 backdrop-blur-sm overflow-hidden">
+    <Card className="border-gray-200 bg-white/80 backdrop-blur-sm overflow-hidden shadow-lg">
       {!isScanning ? (
-        <CardContent className="p-12 text-center">
+        <CardContent className="p-6 sm:p-12 text-center">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
-            <div className={`mx-auto h-20 w-20 rounded-full bg-gradient-to-br ${config.color} flex items-center justify-center`}>
-              <IconComponent className="h-10 w-10 text-white" />
+            <div className={`mx-auto h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br ${config.color} flex items-center justify-center`}>
+              <IconComponent className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
             </div>
             
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-white">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                 Ready to scan in {mode.replace('-', ' ')} mode
               </h3>
-              <p className="text-sm text-white/60">
+              <p className="text-sm text-gray-600 px-4">
                 Click the button below to start scanning tickets
               </p>
             </div>
@@ -259,7 +259,7 @@ function ScannerInterface({
             <Button
               onClick={onStartScan}
               size="lg"
-              className={`bg-gradient-to-r ${config.color} hover:opacity-90 transition-opacity`}
+              className={`bg-gradient-to-r ${config.color} hover:opacity-90 transition-opacity w-full sm:w-auto`}
             >
               <Play className="mr-2 h-5 w-5" />
               Start Scanning
@@ -271,32 +271,33 @@ function ScannerInterface({
           <div id="scanner-container" ref={scannerElementRef} className="scanner-custom" />
           
           {isProcessing && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-              <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center backdrop-blur-sm">
+              <Card className="bg-white backdrop-blur-md border-gray-200 shadow-lg">
                 <CardContent className="p-6 flex items-center gap-3">
-                  <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
-                  <span className="text-white font-medium">Processing ticket...</span>
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                  <span className="text-gray-900 font-medium">Processing ticket...</span>
                 </CardContent>
               </Card>
             </div>
           )}
           
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
             <Button
               onClick={onStopScan}
               variant="destructive"
               size="sm"
-              className="bg-red-600/90 backdrop-blur-sm"
+              className="bg-red-600 hover:bg-red-700 backdrop-blur-sm text-xs sm:text-sm"
             >
-              <Square className="mr-2 h-4 w-4" />
-              Stop Scanning
+              <Square className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Stop Scanning</span>
             </Button>
           </div>
 
-          <div className="absolute bottom-4 left-4">
-            <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-sm">
+          <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4">
+            <Badge variant="secondary" className="bg-white/90 text-gray-900 backdrop-blur-sm border-gray-200 text-xs sm:text-sm">
               <IconComponent className="mr-1 h-3 w-3" />
-              {mode.replace('-', ' ')} mode
+              <span className="hidden sm:inline">{mode.replace('-', ' ')} mode</span>
+              <span className="sm:hidden">{mode.charAt(0).toUpperCase()}</span>
             </Badge>
           </div>
         </div>

@@ -44,48 +44,48 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="border-white/10 bg-black/30 backdrop-blur-md shadow-2xl">
-          <CardHeader className="text-center space-y-4">
+        <Card className="border-gray-200 bg-white/90 backdrop-blur-md shadow-2xl">
+          <CardHeader className="text-center space-y-4 p-4 sm:p-6">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600"
+              className="mx-auto flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-600"
             >
-              <ShieldCheck className="h-8 w-8 text-white" />
+              <ShieldCheck className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
             </motion.div>
             <div className="space-y-2">
-              <CardTitle className="text-3xl font-bold text-white">
+              <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Ticket System
               </CardTitle>
-              <CardDescription className="text-white/60">
+              <CardDescription className="text-gray-600 text-sm sm:text-base">
                 Enter your password to access the professional ticketing system
               </CardDescription>
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-white/80">
+                <label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
                     id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500 focus:ring-purple-500"
+                    className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 h-12"
                     autoFocus
                     disabled={isLoading}
                   />
@@ -93,8 +93,8 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <Alert className="border-red-500/20 bg-red-500/10">
-                  <AlertDescription className="text-red-400">
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertDescription className="text-red-700 text-sm">
                     {error}
                   </AlertDescription>
                 </Alert>
@@ -103,7 +103,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading || !password}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 h-12"
                 size="lg"
               >
                 {isLoading ? (
@@ -122,7 +122,7 @@ export default function LoginPage() {
             </form>
 
             <div className="text-center">
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-gray-500">
                 Secure access to professional ticketing management
               </p>
             </div>
@@ -134,7 +134,7 @@ export default function LoginPage() {
           {[...Array(6)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute h-2 w-2 bg-purple-500/20 rounded-full"
+              className="absolute h-2 w-2 bg-blue-300/40 rounded-full"
               animate={{
                 x: [0, 100, 0],
                 y: [0, -100, 0],

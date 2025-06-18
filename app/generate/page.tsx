@@ -64,9 +64,9 @@ export default function GeneratePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
       {/* Header */}
-      <header className="border-b border-white/10 bg-black/20 backdrop-blur-md">
+      <header className="border-b border-white/5 bg-black/10 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -95,13 +95,13 @@ export default function GeneratePage() {
           {!showPreview ? (
             <div className="space-y-8">
               {/* Generation Form */}
-              <Card className="border-white/10 bg-black/20 backdrop-blur-md">
+              <Card className="border-white/10 bg-slate-900/50 backdrop-blur-md">
                 <CardHeader className="text-center">
                   <motion.div
                     initial={{ scale: 0.9 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.5 }}
-                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600"
+                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-600"
                   >
                     <Zap className="h-8 w-8 text-white" />
                   </motion.div>
@@ -126,7 +126,7 @@ export default function GeneratePage() {
                       placeholder="Enter quantity (1-1000)"
                       min="1"
                       max="1000"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500 focus:ring-purple-500"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-blue-500 focus:ring-blue-500"
                     />
                     <p className="text-xs text-white/50">
                       Each ticket will have a unique ID, QR code, and barcode
@@ -136,7 +136,7 @@ export default function GeneratePage() {
                   <Button
                     onClick={handleGenerate}
                     disabled={!quantity || isGenerating || parseInt(quantity) < 1 || parseInt(quantity) > 1000}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50"
                     size="lg"
                   >
                     {isGenerating ? (
@@ -160,11 +160,11 @@ export default function GeneratePage() {
 
               {/* Features */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="border-purple-500/20 bg-purple-500/5 backdrop-blur-sm">
+                <Card className="border-blue-500/20 bg-blue-500/5 backdrop-blur-sm">
                   <CardContent className="pt-6">
                     <div className="space-y-3">
-                      <div className="rounded-full bg-purple-600/20 p-3 w-fit">
-                        <FileText className="h-6 w-6 text-purple-400" />
+                      <div className="rounded-full bg-blue-600/20 p-3 w-fit">
+                        <FileText className="h-6 w-6 text-blue-400" />
                       </div>
                       <h3 className="font-semibold text-white">Unique IDs</h3>
                       <p className="text-sm text-white/60">
@@ -174,11 +174,11 @@ export default function GeneratePage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-blue-500/20 bg-blue-500/5 backdrop-blur-sm">
+                <Card className="border-slate-500/20 bg-slate-500/5 backdrop-blur-sm">
                   <CardContent className="pt-6">
                     <div className="space-y-3">
-                      <div className="rounded-full bg-blue-600/20 p-3 w-fit">
-                        <Printer className="h-6 w-6 text-blue-400" />
+                      <div className="rounded-full bg-slate-600/20 p-3 w-fit">
+                        <Printer className="h-6 w-6 text-slate-400" />
                       </div>
                       <h3 className="font-semibold text-white">Print Ready</h3>
                       <p className="text-sm text-white/60">
@@ -214,12 +214,12 @@ export default function GeneratePage() {
               </Alert>
 
               {/* Controls */}
-              <Card className="border-white/10 bg-black/20 backdrop-blur-sm">
+              <Card className="border-white/10 bg-slate-900/50 backdrop-blur-sm">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-white flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-purple-600/20 text-purple-300">
+                        <Badge variant="secondary" className="bg-blue-600/20 text-blue-300">
                           {generatedTickets.length}
                         </Badge>
                         Generated Tickets

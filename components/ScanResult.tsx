@@ -32,7 +32,7 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
 
   return (
     <Dialog open={!!result} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-md bg-gradient-to-br from-slate-900 to-purple-900 border-white/20">
+      <DialogContent className="sm:max-w-md bg-gradient-to-br from-slate-900 to-gray-900 border-white/20">
         <DialogHeader>
           <DialogTitle className="sr-only">Scan Result</DialogTitle>
         </DialogHeader>
@@ -149,7 +149,7 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
           {/* Close Button */}
           <Button
             onClick={onClose}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
             size="lg"
           >
             Continue Scanning
