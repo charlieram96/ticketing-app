@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode'
-import { motion, AnimatePresence } from 'framer-motion'
-import { QrCode, Barcode, CheckCircle, XCircle, Eye, RotateCcw, Loader2, Play, Square, SwitchCamera, Zap } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { QrCode, Barcode, CheckCircle, Eye, RotateCcw, Loader2, Play, Square, SwitchCamera } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -172,25 +172,25 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Mode Selection */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         {(['check-in', 'view', 'reset'] as ScanMode[]).map((m) => {
           const config = getModeConfig(m)
           const IconComponent = config.icon
           const isActive = mode === m
           
           return (
-            <motion.div key={m} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <motion.div key={m} whileTap={{ scale: 0.98 }} className="flex-1">
               <Button
                 onClick={() => setMode(m)}
                 variant={isActive ? "default" : "outline"}
-                className={`h-auto w-full flex-row sm:flex-col gap-3 sm:gap-2 p-4 justify-start sm:justify-center text-left sm:text-center ${
+                className={`h-12 w-full flex items-center justify-center gap-2 ${
                   isActive 
                     ? `${config.color} text-white` 
-                    : `${config.bgColor} ${config.textColor} hover:${config.bgColor.replace('/10', '/20')}`
+                    : `bg-white ${config.textColor} border-gray-200 hover:bg-gray-50`
                 }`}
               >
-                <IconComponent className="h-5 w-5" />
-                <span className="capitalize font-semibold">{m.replace('-', ' ')}</span>
+                <IconComponent className="h-4 w-4" />
+                <span className="font-medium">{m === 'check-in' ? 'Check-in' : m === 'view' ? 'View' : 'Reset'}</span>
               </Button>
             </motion.div>
           )
@@ -288,35 +288,32 @@ function ScannerInterface({
             
             <div className="space-y-2">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                Ready to scan in {mode.replace('-', ' ')} mode
+                {mode === 'check-in' ? 'Check-in Mode' : mode === 'view' ? 'View Mode' : 'Reset Mode'}
               </h3>
-              <p className="text-sm text-gray-600 px-4">
-                <span className="hidden sm:inline">Click the button below to start scanning tickets</span>
-                <span className="sm:hidden">Tap to start scanning tickets with {facingMode === 'user' ? 'front' : 'back'} camera</span>
+              <p className="text-sm text-gray-600">
+                Camera: {facingMode === 'user' ? 'Front' : 'Back'}
               </p>
             </div>
 
-            <div className="space-y-3 w-full">
+            <div className="space-y-3 w-full px-4">
               <Button
                 onClick={onStartScan}
                 size="lg"
-                className={`bg-gradient-to-r ${config.color} hover:opacity-90 transition-opacity w-full`}
+                className={`bg-gradient-to-r ${config.color} hover:opacity-90 transition-opacity w-full h-14 text-base`}
               >
                 <Play className="mr-2 h-5 w-5" />
                 Start Scanning
               </Button>
               
-              <div className="flex gap-2 justify-center">
-                <Button
-                  onClick={onSwitchCamera}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 sm:flex-none"
-                >
-                  <SwitchCamera className="mr-2 h-4 w-4" />
-                  {facingMode === 'user' ? 'Use Back Camera' : 'Use Front Camera'}
-                </Button>
-              </div>
+              <Button
+                onClick={onSwitchCamera}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                <SwitchCamera className="mr-2 h-4 w-4" />
+                Switch to {facingMode === 'user' ? 'Back' : 'Front'} Camera
+              </Button>
             </div>
           </motion.div>
         </CardContent>
@@ -326,56 +323,38 @@ function ScannerInterface({
           
           {isProcessing && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center backdrop-blur-sm">
-              <Card className="bg-white backdrop-blur-md border-gray-200 shadow-lg">
-                <CardContent className="p-6 flex items-center gap-3">
-                  <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                  <span className="text-gray-900 font-medium">Processing ticket...</span>
-                </CardContent>
-              </Card>
+              <div className="bg-white/90 backdrop-blur-md rounded-lg shadow-lg p-4 flex items-center gap-3">
+                <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                <span className="text-gray-900 text-sm">Processing...</span>
+              </div>
             </div>
           )}
           
-          {/* Top Controls */}
-          <div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-4 flex justify-between items-start">
-            <Badge variant="secondary" className="bg-white/90 text-gray-900 backdrop-blur-sm border-gray-200 text-xs sm:text-sm">
-              <IconComponent className="mr-1 h-3 w-3" />
-              <span className="hidden sm:inline">{mode.replace('-', ' ')} mode</span>
-              <span className="sm:hidden">{mode.charAt(0).toUpperCase()}</span>
-            </Badge>
-            
-            <Button
-              onClick={onStopScan}
-              variant="destructive"
-              size="sm"
-              className="bg-red-600 hover:bg-red-700 backdrop-blur-sm text-xs sm:text-sm"
-            >
-              <Square className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Stop</span>
-            </Button>
-          </div>
-
-          {/* Bottom Controls */}
-          <div className="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4">
-            <div className="flex justify-between items-end mb-2">
-              <div className="text-white/80 text-xs sm:text-sm backdrop-blur-sm bg-black/20 px-2 py-1 rounded">
-                {facingMode === 'user' ? 'Front Camera' : 'Back Camera'}
-              </div>
-              
-              <Button
-                onClick={onSwitchCamera}
-                variant="secondary"
-                size="sm"
-                className="bg-white/90 text-gray-900 backdrop-blur-sm border-gray-200 hover:bg-white"
-              >
-                <SwitchCamera className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Switch</span>
-              </Button>
-            </div>
-            
-            {/* Scanning Tips for Mobile */}
-            <div className="sm:hidden">
-              <div className="text-white/90 text-xs backdrop-blur-sm bg-black/30 px-3 py-2 rounded text-center">
-                💡 Hold steady • Center the {scanType === 'qr' ? 'QR code' : 'barcode'} • Ensure good lighting
+          {/* Simplified Controls Overlay */}
+          <div className="absolute inset-x-0 bottom-4 px-4">
+            <div className="bg-black/50 backdrop-blur-md rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <Button
+                  onClick={onSwitchCamera}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20"
+                >
+                  <SwitchCamera className="h-5 w-5" />
+                </Button>
+                
+                <span className="text-white text-sm font-medium">
+                  {mode === 'check-in' ? 'Check-in' : mode === 'view' ? 'View' : 'Reset'}
+                </span>
+                
+                <Button
+                  onClick={onStopScan}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20"
+                >
+                  <Square className="h-5 w-5" />
+                </Button>
               </div>
             </div>
           </div>
