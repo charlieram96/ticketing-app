@@ -101,11 +101,22 @@
 /* Mobile optimizations */
 @media (max-width: 640px) {
   #qr-reader__scan_region {
-    min-height: 250px !important;
+    min-height: 300px !important;
+    border-width: 3px !important;
   }
   
   #qr-reader video {
-    min-height: 200px !important;
+    min-height: 250px !important;
+    object-fit: cover !important;
+  }
+  
+  #qr-reader__dashboard_section {
+    padding: 8px !important;
+  }
+  
+  #qr-reader__header_message {
+    font-size: 14px !important;
+    margin-bottom: 8px !important;
   }
 }
 

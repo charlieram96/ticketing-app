@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode'
 import { motion, AnimatePresence } from 'framer-motion'
-import { QrCode, Barcode, CheckCircle, XCircle, Eye, RotateCcw, Loader2, Play, Square } from 'lucide-react'
+import { QrCode, Barcode, CheckCircle, XCircle, Eye, RotateCcw, Loader2, Play, Square, SwitchCamera, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +29,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   const [scanType, setScanType] = useState<ScanType>('qr')
   const [isScanning, setIsScanning] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const scannerElementRef = useRef<HTMLDivElement>(null)
 
@@ -36,10 +37,26 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     if (isScanning && scannerElementRef.current) {
       const config = {
         fps: 10,
-        qrbox: scanType === 'qr' ? { width: 250, height: 250 } : { width: 300, height: 150 },
-        supportedScanTypes: scanType === 'qr' 
-          ? [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-          : [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+        qrbox: scanType === 'qr' ? { width: 280, height: 280 } : { width: 320, height: 160 },
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+        aspectRatio: 1.0,
+        showTorchButtonIfSupported: true,
+        showZoomSliderIfSupported: false, // Disable to clean up mobile UI
+        defaultZoomValueIfSupported: 1,
+        useBarCodeDetectorIfSupported: true,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        },
+        // Optimized camera constraints for mobile
+        videoConstraints: {
+          facingMode: facingMode === 'user' ? 'user' : 'environment',
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 },
+          frameRate: { ideal: 30, min: 15 }
+        },
+        // Better mobile performance
+        rememberLastUsedCamera: true,
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
       }
 
       scannerRef.current = new Html5QrcodeScanner('scanner-container', config, false)
@@ -51,7 +68,10 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           }
         },
         (error) => {
-          console.log('Scan error:', error)
+          // Only log meaningful errors, not continuous scan failures
+          if (!error.includes('NotFoundException')) {
+            console.log('Scan error:', error)
+          }
         }
       )
     }
@@ -62,7 +82,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         scannerRef.current = null
       }
     }
-  }, [isScanning, scanType, mode])
+  }, [isScanning, scanType, mode, facingMode])
 
   const handleScan = async (ticketId: string) => {
     setIsProcessing(true)
@@ -114,6 +134,13 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         }
       }, 2000)
     }
+  }
+
+  const switchCamera = () => {
+    if (scannerRef.current) {
+      scannerRef.current.clear()
+    }
+    setFacingMode(prev => prev === 'user' ? 'environment' : 'user')
   }
 
   const getModeConfig = (m: ScanMode) => {
@@ -252,18 +279,33 @@ function ScannerInterface({
                 Ready to scan in {mode.replace('-', ' ')} mode
               </h3>
               <p className="text-sm text-gray-600 px-4">
-                Click the button below to start scanning tickets
+                <span className="hidden sm:inline">Click the button below to start scanning tickets</span>
+                <span className="sm:hidden">Tap to start scanning tickets with {facingMode === 'user' ? 'front' : 'back'} camera</span>
               </p>
             </div>
 
-            <Button
-              onClick={onStartScan}
-              size="lg"
-              className={`bg-gradient-to-r ${config.color} hover:opacity-90 transition-opacity w-full sm:w-auto`}
-            >
-              <Play className="mr-2 h-5 w-5" />
-              Start Scanning
-            </Button>
+            <div className="space-y-3 w-full">
+              <Button
+                onClick={onStartScan}
+                size="lg"
+                className={`bg-gradient-to-r ${config.color} hover:opacity-90 transition-opacity w-full`}
+              >
+                <Play className="mr-2 h-5 w-5" />
+                Start Scanning
+              </Button>
+              
+              <div className="flex gap-2 justify-center">
+                <Button
+                  onClick={switchCamera}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none"
+                >
+                  <SwitchCamera className="mr-2 h-4 w-4" />
+                  {facingMode === 'user' ? 'Use Back Camera' : 'Use Front Camera'}
+                </Button>
+              </div>
+            </div>
           </motion.div>
         </CardContent>
       ) : (
@@ -281,7 +323,14 @@ function ScannerInterface({
             </div>
           )}
           
-          <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
+          {/* Top Controls */}
+          <div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-4 flex justify-between items-start">
+            <Badge variant="secondary" className="bg-white/90 text-gray-900 backdrop-blur-sm border-gray-200 text-xs sm:text-sm">
+              <IconComponent className="mr-1 h-3 w-3" />
+              <span className="hidden sm:inline">{mode.replace('-', ' ')} mode</span>
+              <span className="sm:hidden">{mode.charAt(0).toUpperCase()}</span>
+            </Badge>
+            
             <Button
               onClick={onStopScan}
               variant="destructive"
@@ -289,16 +338,34 @@ function ScannerInterface({
               className="bg-red-600 hover:bg-red-700 backdrop-blur-sm text-xs sm:text-sm"
             >
               <Square className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Stop Scanning</span>
+              <span className="hidden sm:inline">Stop</span>
             </Button>
           </div>
 
-          <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4">
-            <Badge variant="secondary" className="bg-white/90 text-gray-900 backdrop-blur-sm border-gray-200 text-xs sm:text-sm">
-              <IconComponent className="mr-1 h-3 w-3" />
-              <span className="hidden sm:inline">{mode.replace('-', ' ')} mode</span>
-              <span className="sm:hidden">{mode.charAt(0).toUpperCase()}</span>
-            </Badge>
+          {/* Bottom Controls */}
+          <div className="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4">
+            <div className="flex justify-between items-end mb-2">
+              <div className="text-white/80 text-xs sm:text-sm backdrop-blur-sm bg-black/20 px-2 py-1 rounded">
+                {facingMode === 'user' ? 'Front Camera' : 'Back Camera'}
+              </div>
+              
+              <Button
+                onClick={switchCamera}
+                variant="secondary"
+                size="sm"
+                className="bg-white/90 text-gray-900 backdrop-blur-sm border-gray-200 hover:bg-white"
+              >
+                <SwitchCamera className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Switch</span>
+              </Button>
+            </div>
+            
+            {/* Scanning Tips for Mobile */}
+            <div className="sm:hidden">
+              <div className="text-white/90 text-xs backdrop-blur-sm bg-black/30 px-3 py-2 rounded text-center">
+                💡 Hold steady • Center the {scanType === 'qr' ? 'QR code' : 'barcode'} • Ensure good lighting
+              </div>
+            </div>
           </div>
         </div>
       )}
