@@ -3,7 +3,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode'
 import { motion, AnimatePresence } from 'framer-motion'
-import { QrCode, Barcode, CheckCircle, XCircle, Eye, RotateCcw, Loader2 } from 'lucide-react'
+import { QrCode, Barcode, CheckCircle, XCircle, Eye, RotateCcw, Loader2, Play, Square } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type ScanMode = 'check-in' | 'view' | 'reset'
 type ScanType = 'qr' | 'barcode'
@@ -104,7 +108,6 @@ export default function Scanner({ onScanResult }: ScannerProps) {
       })
     } finally {
       setIsProcessing(false)
-      // Continue scanning after a short delay
       setTimeout(() => {
         if (scannerRef.current) {
           scannerRef.current.resume()
@@ -113,19 +116,29 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     }
   }
 
-  const getModeIcon = () => {
-    switch (mode) {
-      case 'check-in': return <CheckCircle className="w-5 h-5" />
-      case 'view': return <Eye className="w-5 h-5" />
-      case 'reset': return <RotateCcw className="w-5 h-5" />
-    }
-  }
-
-  const getModeColor = () => {
-    switch (mode) {
-      case 'check-in': return 'from-green-600 to-emerald-600'
-      case 'view': return 'from-blue-600 to-cyan-600'
-      case 'reset': return 'from-orange-600 to-red-600'
+  const getModeConfig = (m: ScanMode) => {
+    switch (m) {
+      case 'check-in':
+        return { 
+          icon: CheckCircle, 
+          color: 'bg-green-600 hover:bg-green-700',
+          bgColor: 'border-green-500/20 bg-green-500/10',
+          textColor: 'text-green-400'
+        }
+      case 'view':
+        return { 
+          icon: Eye, 
+          color: 'bg-blue-600 hover:bg-blue-700',
+          bgColor: 'border-blue-500/20 bg-blue-500/10',
+          textColor: 'text-blue-400'
+        }
+      case 'reset':
+        return { 
+          icon: RotateCcw, 
+          color: 'bg-orange-600 hover:bg-orange-700',
+          bgColor: 'border-orange-500/20 bg-orange-500/10',
+          textColor: 'text-orange-400'
+        }
     }
   }
 
@@ -133,117 +146,161 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     <div className="space-y-6">
       {/* Mode Selection */}
       <div className="grid grid-cols-3 gap-3">
-        {(['check-in', 'view', 'reset'] as ScanMode[]).map((m) => (
-          <motion.button
-            key={m}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setMode(m)}
-            className={`p-4 rounded-xl font-semibold capitalize transition-all ${
-              mode === m
-                ? `bg-gradient-to-r ${getModeColor()} text-white shadow-lg`
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              {m === 'check-in' && <CheckCircle className="w-5 h-5" />}
-              {m === 'view' && <Eye className="w-5 h-5" />}
-              {m === 'reset' && <RotateCcw className="w-5 h-5" />}
-              {m.replace('-', ' ')}
-            </div>
-          </motion.button>
-        ))}
+        {(['check-in', 'view', 'reset'] as ScanMode[]).map((m) => {
+          const config = getModeConfig(m)
+          const IconComponent = config.icon
+          const isActive = mode === m
+          
+          return (
+            <motion.div key={m} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={() => setMode(m)}
+                variant={isActive ? "default" : "outline"}
+                className={`h-auto w-full flex-col gap-2 p-4 ${
+                  isActive 
+                    ? `${config.color} text-white` 
+                    : `${config.bgColor} ${config.textColor} hover:${config.bgColor.replace('/10', '/20')}`
+                }`}
+              >
+                <IconComponent className="h-5 w-5" />
+                <span className="capitalize font-semibold">{m.replace('-', ' ')}</span>
+              </Button>
+            </motion.div>
+          )
+        })}
       </div>
 
-      {/* Scan Type Selection */}
-      <div className="flex gap-3 justify-center">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setScanType('qr')}
-          className={`px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all ${
-            scanType === 'qr'
-              ? 'bg-purple-600 text-white shadow-lg'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          <QrCode className="w-5 h-5" />
-          QR Code
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setScanType('barcode')}
-          className={`px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all ${
-            scanType === 'barcode'
-              ? 'bg-purple-600 text-white shadow-lg'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          <Barcode className="w-5 h-5" />
-          Barcode
-        </motion.button>
-      </div>
-
-      {/* Scanner */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-xl overflow-hidden"
-      >
-        {!isScanning ? (
-          <div className="p-12 text-center">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsScanning(true)}
-              className={`bg-gradient-to-r ${getModeColor()} text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg flex items-center gap-3 mx-auto`}
-            >
-              {getModeIcon()}
-              Start Scanning
-            </motion.button>
-          </div>
-        ) : (
-          <div className="relative">
-            <div id="scanner-container" ref={scannerElementRef} className="scanner-custom" />
-            {isProcessing && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="bg-white rounded-xl p-4"
-                >
-                  <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-                </motion.div>
-              </div>
-            )}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsScanning(false)}
-              className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg"
-            >
-              Stop Scanning
-            </motion.button>
-          </div>
-        )}
-      </motion.div>
-
-      <style jsx global>{`
-        #scanner-container {
-          position: relative;
-          padding: 0;
-          border: none;
-        }
-        #scanner-container video {
-          width: 100% !important;
-          height: auto !important;
-          border-radius: 0;
-        }
-        #scanner-container button {
-          display: none !important;
-        }
-      `}</style>
+      {/* Scan Type Tabs */}
+      <Tabs value={scanType} onValueChange={(value) => setScanType(value as ScanType)} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-white/5">
+          <TabsTrigger value="qr" className="data-[state=active]:bg-purple-600">
+            <QrCode className="mr-2 h-4 w-4" />
+            QR Code
+          </TabsTrigger>
+          <TabsTrigger value="barcode" className="data-[state=active]:bg-purple-600">
+            <Barcode className="mr-2 h-4 w-4" />
+            Barcode
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="qr" className="mt-6">
+          <ScannerInterface 
+            isScanning={isScanning}
+            isProcessing={isProcessing}
+            mode={mode}
+            onStartScan={() => setIsScanning(true)}
+            onStopScan={() => setIsScanning(false)}
+            scannerElementRef={scannerElementRef}
+          />
+        </TabsContent>
+        
+        <TabsContent value="barcode" className="mt-6">
+          <ScannerInterface 
+            isScanning={isScanning}
+            isProcessing={isProcessing}
+            mode={mode}
+            onStartScan={() => setIsScanning(true)}
+            onStopScan={() => setIsScanning(false)}
+            scannerElementRef={scannerElementRef}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
+  )
+}
+
+interface ScannerInterfaceProps {
+  isScanning: boolean
+  isProcessing: boolean
+  mode: ScanMode
+  onStartScan: () => void
+  onStopScan: () => void
+  scannerElementRef: React.RefObject<HTMLDivElement | null>
+}
+
+function ScannerInterface({ 
+  isScanning, 
+  isProcessing, 
+  mode, 
+  onStartScan, 
+  onStopScan, 
+  scannerElementRef 
+}: ScannerInterfaceProps) {
+  const config = {
+    'check-in': { color: 'from-green-600 to-emerald-600', icon: CheckCircle },
+    'view': { color: 'from-blue-600 to-cyan-600', icon: Eye },
+    'reset': { color: 'from-orange-600 to-red-600', icon: RotateCcw }
+  }[mode]
+
+  const IconComponent = config.icon
+
+  return (
+    <Card className="border-white/10 bg-black/20 backdrop-blur-sm overflow-hidden">
+      {!isScanning ? (
+        <CardContent className="p-12 text-center">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="space-y-6"
+          >
+            <div className={`mx-auto h-20 w-20 rounded-full bg-gradient-to-br ${config.color} flex items-center justify-center`}>
+              <IconComponent className="h-10 w-10 text-white" />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-white">
+                Ready to scan in {mode.replace('-', ' ')} mode
+              </h3>
+              <p className="text-sm text-white/60">
+                Click the button below to start scanning tickets
+              </p>
+            </div>
+
+            <Button
+              onClick={onStartScan}
+              size="lg"
+              className={`bg-gradient-to-r ${config.color} hover:opacity-90 transition-opacity`}
+            >
+              <Play className="mr-2 h-5 w-5" />
+              Start Scanning
+            </Button>
+          </motion.div>
+        </CardContent>
+      ) : (
+        <div className="relative">
+          <div id="scanner-container" ref={scannerElementRef} className="scanner-custom" />
+          
+          {isProcessing && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
+                <CardContent className="p-6 flex items-center gap-3">
+                  <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
+                  <span className="text-white font-medium">Processing ticket...</span>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
+          <div className="absolute top-4 right-4">
+            <Button
+              onClick={onStopScan}
+              variant="destructive"
+              size="sm"
+              className="bg-red-600/90 backdrop-blur-sm"
+            >
+              <Square className="mr-2 h-4 w-4" />
+              Stop Scanning
+            </Button>
+          </div>
+
+          <div className="absolute bottom-4 left-4">
+            <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-sm">
+              <IconComponent className="mr-1 h-3 w-3" />
+              {mode.replace('-', ' ')} mode
+            </Badge>
+          </div>
+        </div>
+      )}
+    </Card>
   )
 }

@@ -3,11 +3,12 @@ import { GoogleSheetsService } from '@/lib/google-sheets'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { ticketId: string } }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
+    const { ticketId } = await params
     const sheets = new GoogleSheetsService()
-    const ticket = await sheets.getTicket(params.ticketId)
+    const ticket = await sheets.getTicket(ticketId)
     
     if (!ticket) {
       return NextResponse.json(
@@ -27,9 +28,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { ticketId: string } }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
+    const { ticketId } = await params
     const { action } = await request.json()
     
     if (!['redeem', 'reset', 'view'].includes(action)) {
@@ -40,7 +42,7 @@ export async function PATCH(
     }
     
     const sheets = new GoogleSheetsService()
-    const updatedTicket = await sheets.updateTicket(params.ticketId, action)
+    const updatedTicket = await sheets.updateTicket(ticketId, action)
     
     if (!updatedTicket) {
       return NextResponse.json(

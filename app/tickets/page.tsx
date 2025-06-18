@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Search, CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Search, CheckCircle, Clock, RefreshCw, Filter, TrendingUp, Users, TicketCheck } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface Ticket {
   id: string
@@ -65,186 +71,226 @@ export default function TicketsPage() {
     total: tickets.length,
     redeemed: tickets.filter(t => t.status === 'redeemed').length,
     unredeemed: tickets.filter(t => t.status === 'unredeemed').length,
+    redeemRate: tickets.length > 0 ? Math.round((tickets.filter(t => t.status === 'redeemed').length / tickets.length) * 100) : 0
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       {/* Header */}
-      <header className="bg-white/10 backdrop-blur-lg border-b border-white/10">
+      <header className="border-b border-white/10 bg-black/20 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link href="/">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-white/10 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-white/20 transition-all"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </motion.button>
+                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back
+                </Button>
               </Link>
-              <h1 className="text-2xl font-bold text-white">Manage Tickets</h1>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Ticket Management</h1>
+                <p className="text-sm text-white/60">Monitor and manage all tickets</p>
+              </div>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Button
               onClick={fetchTickets}
-              className="bg-white/10 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-white/20 transition-all"
+              variant="outline"
+              size="sm"
+              className="border-white/20 text-white hover:bg-white/10"
             >
-              <RefreshCw className="w-5 h-5" />
-            </motion.button>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-6xl mx-auto"
+          className="max-w-7xl mx-auto space-y-8"
         >
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/60 text-sm">Total Tickets</p>
-                  <p className="text-3xl font-bold text-white">{stats.total}</p>
-                </div>
-                <div className="bg-purple-600/20 p-3 rounded-lg">
-                  <Clock className="w-6 h-6 text-purple-400" />
-                </div>
-              </div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <motion.div whileHover={{ scale: 1.02 }}>
+              <Card className="border-white/10 bg-black/20 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white/60">Total Tickets</p>
+                      <p className="text-3xl font-bold text-white">{stats.total}</p>
+                    </div>
+                    <div className="rounded-full bg-purple-600/20 p-3">
+                      <TicketCheck className="h-6 w-6 text-purple-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
 
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/60 text-sm">Redeemed</p>
-                  <p className="text-3xl font-bold text-white">{stats.redeemed}</p>
-                </div>
-                <div className="bg-green-600/20 p-3 rounded-lg">
-                  <CheckCircle className="w-6 h-6 text-green-400" />
-                </div>
-              </div>
+            <motion.div whileHover={{ scale: 1.02 }}>
+              <Card className="border-green-500/20 bg-green-500/5 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white/60">Redeemed</p>
+                      <p className="text-3xl font-bold text-white">{stats.redeemed}</p>
+                    </div>
+                    <div className="rounded-full bg-green-600/20 p-3">
+                      <CheckCircle className="h-6 w-6 text-green-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
 
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/60 text-sm">Unredeemed</p>
-                  <p className="text-3xl font-bold text-white">{stats.unredeemed}</p>
-                </div>
-                <div className="bg-blue-600/20 p-3 rounded-lg">
-                  <XCircle className="w-6 h-6 text-blue-400" />
-                </div>
-              </div>
+            <motion.div whileHover={{ scale: 1.02 }}>
+              <Card className="border-blue-500/20 bg-blue-500/5 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white/60">Available</p>
+                      <p className="text-3xl font-bold text-white">{stats.unredeemed}</p>
+                    </div>
+                    <div className="rounded-full bg-blue-600/20 p-3">
+                      <Clock className="h-6 w-6 text-blue-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }}>
+              <Card className="border-orange-500/20 bg-orange-500/5 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white/60">Redeem Rate</p>
+                      <p className="text-3xl font-bold text-white">{stats.redeemRate}%</p>
+                    </div>
+                    <div className="rounded-full bg-orange-600/20 p-3">
+                      <TrendingUp className="h-6 w-6 text-orange-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
           </div>
 
           {/* Search and Filter */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 mb-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search by ticket ID..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+          <Card className="border-white/10 bg-black/20 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Filter className="h-5 w-5" />
+                Filter & Search
+              </CardTitle>
+              <CardDescription className="text-white/60">
+                Find and filter tickets by ID or status
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                  <Input
+                    placeholder="Search by ticket ID..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                  />
+                </div>
+                <Tabs value={filter} onValueChange={(value) => setFilter(value as any)} className="w-auto">
+                  <TabsList className="bg-white/5">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="redeemed" className="data-[state=active]:bg-green-600">
+                      Redeemed
+                    </TabsTrigger>
+                    <TabsTrigger value="unredeemed" className="data-[state=active]:bg-blue-600">
+                      Available
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
-              <div className="flex gap-2">
-                {(['all', 'redeemed', 'unredeemed'] as const).map((f) => (
-                  <motion.button
-                    key={f}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setFilter(f)}
-                    className={`px-4 py-3 rounded-lg font-semibold capitalize transition-all ${
-                      filter === f
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-white/10 text-white/60 hover:bg-white/20'
-                    }`}
-                  >
-                    {f}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Tickets List */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 overflow-hidden">
-            {isLoading ? (
-              <div className="p-12 text-center">
-                <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-white/60">Loading tickets...</p>
-              </div>
-            ) : filteredTickets.length === 0 ? (
-              <div className="p-12 text-center">
-                <p className="text-white/60">No tickets found</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-white/5">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-white/80">Ticket ID</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-white/80">Status</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-white/80">Created</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-white/80">Redeemed</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
-                    {filteredTickets.map((ticket) => (
-                      <motion.tr
-                        key={ticket.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="hover:bg-white/5 transition-colors"
-                      >
-                        <td className="px-6 py-4">
-                          <span className="font-mono text-white">{ticket.id}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            ticket.status === 'redeemed'
-                              ? 'bg-green-600/20 text-green-400'
-                              : 'bg-blue-600/20 text-blue-400'
-                          }`}>
-                            {ticket.status === 'redeemed' ? (
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                            ) : (
-                              <Clock className="w-3 h-3 mr-1" />
-                            )}
-                            {ticket.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-white/60 text-sm">
-                          {formatDate(ticket.createdAt)}
-                        </td>
-                        <td className="px-6 py-4 text-white/60 text-sm">
-                          {ticket.redeemedAt ? formatDate(ticket.redeemedAt) : '-'}
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+          {/* Tickets Table */}
+          <Card className="border-white/10 bg-black/20 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-white">Tickets</CardTitle>
+              <CardDescription className="text-white/60">
+                Showing {filteredTickets.length} of {tickets.length} tickets
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="h-8 w-8 rounded-full border-2 border-white/30 border-t-white"
+                  />
+                  <span className="ml-3 text-white/60">Loading tickets...</span>
+                </div>
+              ) : filteredTickets.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-white/60">No tickets found</p>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-white/10 overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-white/10 hover:bg-white/5">
+                        <TableHead className="text-white/80">Ticket ID</TableHead>
+                        <TableHead className="text-white/80">Status</TableHead>
+                        <TableHead className="text-white/80">Created</TableHead>
+                        <TableHead className="text-white/80">Redeemed</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTickets.map((ticket) => (
+                        <motion.tr
+                          key={ticket.id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="border-white/10 hover:bg-white/5"
+                        >
+                          <TableCell className="font-mono text-white">
+                            {ticket.id}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={ticket.status === 'redeemed' ? 'default' : 'secondary'}
+                              className={
+                                ticket.status === 'redeemed'
+                                  ? 'bg-green-600/20 text-green-400 border-green-600/30'
+                                  : 'bg-blue-600/20 text-blue-400 border-blue-600/30'
+                              }
+                            >
+                              {ticket.status === 'redeemed' ? (
+                                <CheckCircle className="mr-1 h-3 w-3" />
+                              ) : (
+                                <Clock className="mr-1 h-3 w-3" />
+                              )}
+                              {ticket.status.toUpperCase()}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-white/60 text-sm">
+                            {formatDate(ticket.createdAt)}
+                          </TableCell>
+                          <TableCell className="text-white/60 text-sm">
+                            {ticket.redeemedAt ? formatDate(ticket.redeemedAt) : '-'}
+                          </TableCell>
+                        </motion.tr>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </motion.div>
       </main>
     </div>
