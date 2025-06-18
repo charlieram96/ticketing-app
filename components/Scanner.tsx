@@ -29,7 +29,10 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   const [scanType, setScanType] = useState<ScanType>('qr')
   const [isScanning, setIsScanning] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
+  // Default to back camera on mobile, front camera on desktop
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'environment' : 'user'
+  )
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const scannerElementRef = useRef<HTMLDivElement>(null)
 
@@ -40,22 +43,23 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         qrbox: scanType === 'qr' ? { width: 280, height: 280 } : { width: 320, height: 160 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
         aspectRatio: 1.0,
-        showTorchButtonIfSupported: true,
-        showZoomSliderIfSupported: false, // Disable to clean up mobile UI
+        showTorchButtonIfSupported: false, // Hide torch to clean up UI
+        showZoomSliderIfSupported: false,
         defaultZoomValueIfSupported: 1,
         useBarCodeDetectorIfSupported: true,
         experimentalFeatures: {
           useBarCodeDetectorIfSupported: true
         },
-        // Optimized camera constraints for mobile
+        // Optimized camera constraints
         videoConstraints: {
           facingMode: facingMode === 'user' ? 'user' : 'environment',
           width: { ideal: 1280, min: 640 },
           height: { ideal: 720, min: 480 },
           frameRate: { ideal: 30, min: 15 }
         },
-        // Better mobile performance
-        rememberLastUsedCamera: true
+        // Remember permissions and settings
+        rememberLastUsedCamera: true,
+        requestPermissionOnAutoStart: true
       }
 
       scannerRef.current = new Html5QrcodeScanner('scanner-container', config, false)
@@ -199,12 +203,18 @@ export default function Scanner({ onScanResult }: ScannerProps) {
 
       {/* Scan Type Tabs */}
       <Tabs value={scanType} onValueChange={(value) => setScanType(value as ScanType)} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-100">
-          <TabsTrigger value="qr" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+        <TabsList className="grid w-full grid-cols-2 bg-gray-100 h-12">
+          <TabsTrigger 
+            value="qr" 
+            className="h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 flex items-center justify-center"
+          >
             <QrCode className="mr-2 h-4 w-4" />
             QR Code
           </TabsTrigger>
-          <TabsTrigger value="barcode" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+          <TabsTrigger 
+            value="barcode" 
+            className="h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 flex items-center justify-center"
+          >
             <Barcode className="mr-2 h-4 w-4" />
             Barcode
           </TabsTrigger>
@@ -291,7 +301,7 @@ function ScannerInterface({
                 {mode === 'check-in' ? 'Check-in Mode' : mode === 'view' ? 'View Mode' : 'Reset Mode'}
               </h3>
               <p className="text-sm text-gray-600">
-                Camera: {facingMode === 'user' ? 'Front' : 'Back'}
+                Camera: {facingMode === 'user' ? 'Front' : 'Back'} Camera
               </p>
             </div>
 
@@ -330,32 +340,37 @@ function ScannerInterface({
             </div>
           )}
           
-          {/* Simplified Controls Overlay */}
-          <div className="absolute inset-x-0 bottom-4 px-4">
-            <div className="bg-black/50 backdrop-blur-md rounded-lg p-3">
-              <div className="flex items-center justify-between">
-                <Button
-                  onClick={onSwitchCamera}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20"
-                >
-                  <SwitchCamera className="h-5 w-5" />
-                </Button>
-                
-                <span className="text-white text-sm font-medium">
-                  {mode === 'check-in' ? 'Check-in' : mode === 'view' ? 'View' : 'Reset'}
-                </span>
-                
-                <Button
-                  onClick={onStopScan}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20"
-                >
-                  <Square className="h-5 w-5" />
-                </Button>
+          {/* Clean Bottom Controls */}
+          <div className="absolute inset-x-0 bottom-0 bg-white border-t border-gray-200 p-4">
+            <div className="flex items-center justify-between max-w-md mx-auto">
+              <Button
+                onClick={onSwitchCamera}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                <SwitchCamera className="h-4 w-4" />
+                <span className="hidden sm:inline">Switch</span>
+              </Button>
+              
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-900">
+                  {mode === 'check-in' ? 'Check-in Mode' : mode === 'view' ? 'View Mode' : 'Reset Mode'}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {facingMode === 'user' ? 'Front Camera' : 'Back Camera'}
+                </div>
               </div>
+              
+              <Button
+                onClick={onStopScan}
+                variant="destructive"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Square className="h-4 w-4" />
+                <span className="hidden sm:inline">Stop</span>
+              </Button>
             </div>
           </div>
         </div>

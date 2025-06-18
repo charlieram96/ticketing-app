@@ -97,6 +97,63 @@
   display: none !important;
 }
 
+#qr-reader__filescan_input {
+  display: none !important;
+}
+
+#qr-reader__dashboard_section_fsr {
+  display: none !important;
+}
+
+#qr-reader__dashboard_section_fsr > div {
+  display: none !important;
+}
+
+img[alt="Info icon"] {
+  display: none !important;
+}
+
+div[style*="font-size: 10px"] {
+  display: none !important;
+}
+
+span[style*="color: rgb(0, 128, 0)"] {
+  display: none !important;
+}
+
+div:has(img[alt="Info icon"]) {
+  display: none !important;
+}
+
+/* Hide any text containing "ScanApp" or "Powered by" */
+div:contains("ScanApp"),
+div:contains("Powered by"),
+span:contains("report issues") {
+  display: none !important;
+}
+
+/* Hide all scanner footer elements */
+#qr-reader div[style*="font-size: 10px"] {
+  display: none !important;
+}
+
+#qr-reader div[style*="font-size: 11px"] {
+  display: none !important;
+}
+
+#qr-reader div[style*="text-align: center"] > div:last-child {
+  display: none !important;
+}
+
+/* Additional cleanup */
+#qr-reader > div:last-child {
+  display: none !important;
+}
+
+#qr-reader__footer {
+  display: none !important;
+}
+
 #qr-reader__scan_region {
   border-radius: 12px !important;
   border: 2px solid rgba(37, 99, 235, 0.3) !important;
@@ -115,6 +172,7 @@
   padding: 0 !important;
   border: none !important;
   min-height: 400px !important;
+  padding-bottom: 80px !important; /* Space for bottom controls */
 }
 
 .scanner-custom {
@@ -140,6 +198,7 @@
   
   #scanner-container {
     min-height: 350px !important;
+    padding-bottom: 100px !important; /* More space for bottom controls on mobile */
   }
   
   /* Ensure scanner takes full width on mobile */
