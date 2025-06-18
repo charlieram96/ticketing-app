@@ -34,6 +34,7 @@ export default function TicketsPage() {
 
   useEffect(() => {
     filterTickets()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, filter, tickets])
 
   const fetchTickets = async () => {

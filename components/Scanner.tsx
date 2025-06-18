@@ -55,8 +55,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           frameRate: { ideal: 30, min: 15 }
         },
         // Better mobile performance
-        rememberLastUsedCamera: true,
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+        rememberLastUsedCamera: true
       }
 
       scannerRef.current = new Html5QrcodeScanner('scanner-container', config, false)
@@ -82,6 +81,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         scannerRef.current = null
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isScanning, scanType, mode, facingMode])
 
   const handleScan = async (ticketId: string) => {
@@ -215,8 +215,11 @@ export default function Scanner({ onScanResult }: ScannerProps) {
             isScanning={isScanning}
             isProcessing={isProcessing}
             mode={mode}
+            scanType={scanType}
+            facingMode={facingMode}
             onStartScan={() => setIsScanning(true)}
             onStopScan={() => setIsScanning(false)}
+            onSwitchCamera={switchCamera}
             scannerElementRef={scannerElementRef}
           />
         </TabsContent>
@@ -226,8 +229,11 @@ export default function Scanner({ onScanResult }: ScannerProps) {
             isScanning={isScanning}
             isProcessing={isProcessing}
             mode={mode}
+            scanType={scanType}
+            facingMode={facingMode}
             onStartScan={() => setIsScanning(true)}
             onStopScan={() => setIsScanning(false)}
+            onSwitchCamera={switchCamera}
             scannerElementRef={scannerElementRef}
           />
         </TabsContent>
@@ -240,8 +246,11 @@ interface ScannerInterfaceProps {
   isScanning: boolean
   isProcessing: boolean
   mode: ScanMode
+  scanType: ScanType
+  facingMode: 'user' | 'environment'
   onStartScan: () => void
   onStopScan: () => void
+  onSwitchCamera: () => void
   scannerElementRef: React.RefObject<HTMLDivElement | null>
 }
 
@@ -249,8 +258,11 @@ function ScannerInterface({
   isScanning, 
   isProcessing, 
   mode, 
+  scanType,
+  facingMode,
   onStartScan, 
   onStopScan, 
+  onSwitchCamera,
   scannerElementRef 
 }: ScannerInterfaceProps) {
   const config = {
@@ -296,7 +308,7 @@ function ScannerInterface({
               
               <div className="flex gap-2 justify-center">
                 <Button
-                  onClick={switchCamera}
+                  onClick={onSwitchCamera}
                   variant="outline"
                   size="sm"
                   className="flex-1 sm:flex-none"
@@ -350,7 +362,7 @@ function ScannerInterface({
               </div>
               
               <Button
-                onClick={switchCamera}
+                onClick={onSwitchCamera}
                 variant="secondary"
                 size="sm"
                 className="bg-white/90 text-gray-900 backdrop-blur-sm border-gray-200 hover:bg-white"
