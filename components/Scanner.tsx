@@ -29,6 +29,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   const [scanType, setScanType] = useState<ScanType>('qr')
   const [isScanning, setIsScanning] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [scannerError, setScannerError] = useState<string | null>(null)
   // Default to back camera on mobile, front camera on desktop
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
     typeof window !== 'undefined' && window.innerWidth < 768 ? 'environment' : 'user'
@@ -38,50 +39,61 @@ export default function Scanner({ onScanResult }: ScannerProps) {
 
   useEffect(() => {
     if (isScanning && scannerElementRef.current) {
+      console.log('Starting scanner with facingMode:', facingMode)
+      setScannerError(null) // Clear any previous errors
+      
       const config = {
         fps: 10,
         qrbox: scanType === 'qr' ? { width: 280, height: 280 } : { width: 320, height: 160 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
         aspectRatio: 1.0,
-        showTorchButtonIfSupported: false, // Hide torch to clean up UI
+        showTorchButtonIfSupported: false,
         showZoomSliderIfSupported: false,
         defaultZoomValueIfSupported: 1,
         useBarCodeDetectorIfSupported: true,
         experimentalFeatures: {
           useBarCodeDetectorIfSupported: true
         },
-        // Optimized camera constraints
+        // Simplified camera constraints
         videoConstraints: {
-          facingMode: facingMode === 'user' ? 'user' : 'environment',
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 },
-          frameRate: { ideal: 30, min: 15 }
+          facingMode: facingMode,
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         },
-        // Remember permissions and settings
-        rememberLastUsedCamera: true,
-        requestPermissionOnAutoStart: true
+        rememberLastUsedCamera: true
       }
 
-      scannerRef.current = new Html5QrcodeScanner('scanner-container', config, false)
-      
-      scannerRef.current.render(
-        async (decodedText) => {
-          if (!isProcessing) {
-            await handleScan(decodedText)
+      try {
+        scannerRef.current = new Html5QrcodeScanner('scanner-container', config, false)
+        
+        scannerRef.current.render(
+          async (decodedText) => {
+            console.log('QR Code detected:', decodedText)
+            if (!isProcessing) {
+              await handleScan(decodedText)
+            }
+          },
+          (error) => {
+            // Only log meaningful errors, not continuous scan failures
+            if (!error.includes('NotFoundException') && !error.includes('No MultiFormat Readers')) {
+              console.error('Scanner error:', error)
+            }
           }
-        },
-        (error) => {
-          // Only log meaningful errors, not continuous scan failures
-          if (!error.includes('NotFoundException')) {
-            console.log('Scan error:', error)
-          }
-        }
-      )
+        )
+      } catch (error) {
+        console.error('Failed to initialize scanner:', error)
+        setScannerError(`Failed to start camera: ${error}`)
+        setIsScanning(false)
+      }
     }
 
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.clear()
+        try {
+          scannerRef.current.clear()
+        } catch (error) {
+          console.error('Error clearing scanner:', error)
+        }
         scannerRef.current = null
       }
     }
@@ -141,9 +153,11 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   }
 
   const switchCamera = () => {
+    console.log('Switching camera from', facingMode, 'to', facingMode === 'user' ? 'environment' : 'user')
     if (scannerRef.current) {
       scannerRef.current.clear()
     }
+    setScannerError(null) // Clear any previous errors
     setFacingMode(prev => prev === 'user' ? 'environment' : 'user')
   }
 
@@ -227,9 +241,14 @@ export default function Scanner({ onScanResult }: ScannerProps) {
             mode={mode}
             scanType={scanType}
             facingMode={facingMode}
+            scannerError={scannerError}
             onStartScan={() => setIsScanning(true)}
             onStopScan={() => setIsScanning(false)}
             onSwitchCamera={switchCamera}
+            onClearError={() => {
+              setScannerError(null)
+              setIsScanning(false)
+            }}
             scannerElementRef={scannerElementRef}
           />
         </TabsContent>
@@ -241,9 +260,14 @@ export default function Scanner({ onScanResult }: ScannerProps) {
             mode={mode}
             scanType={scanType}
             facingMode={facingMode}
+            scannerError={scannerError}
             onStartScan={() => setIsScanning(true)}
             onStopScan={() => setIsScanning(false)}
             onSwitchCamera={switchCamera}
+            onClearError={() => {
+              setScannerError(null)
+              setIsScanning(false)
+            }}
             scannerElementRef={scannerElementRef}
           />
         </TabsContent>
@@ -258,9 +282,11 @@ interface ScannerInterfaceProps {
   mode: ScanMode
   scanType: ScanType
   facingMode: 'user' | 'environment'
+  scannerError: string | null
   onStartScan: () => void
   onStopScan: () => void
   onSwitchCamera: () => void
+  onClearError: () => void
   scannerElementRef: React.RefObject<HTMLDivElement | null>
 }
 
@@ -268,11 +294,13 @@ function ScannerInterface({
   isScanning, 
   isProcessing, 
   mode, 
-  scanType,
+  scanType: _scanType, // Prefix with underscore to indicate intentionally unused
   facingMode,
+  scannerError,
   onStartScan, 
   onStopScan, 
   onSwitchCamera,
+  onClearError,
   scannerElementRef 
 }: ScannerInterfaceProps) {
   const config = {
@@ -307,7 +335,10 @@ function ScannerInterface({
 
             <div className="space-y-3 w-full px-4">
               <Button
-                onClick={onStartScan}
+                onClick={() => {
+                  console.log('Start scanning clicked, current facingMode:', facingMode)
+                  onStartScan()
+                }}
                 size="lg"
                 className={`bg-gradient-to-r ${config.color} hover:opacity-90 transition-opacity w-full h-14 text-base`}
               >
@@ -328,11 +359,32 @@ function ScannerInterface({
           </motion.div>
         </CardContent>
       ) : (
-        <div className="relative">
-          <div id="scanner-container" ref={scannerElementRef} className="scanner-custom" />
+        <div className="relative min-h-[400px] bg-gray-50">
+          <div 
+            id="scanner-container" 
+            ref={scannerElementRef} 
+            className="scanner-custom w-full h-full min-h-[400px]"
+            style={{ minHeight: '400px' }}
+          />
+          
+          {scannerError && (
+            <div className="absolute inset-0 bg-red-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg shadow-lg p-4 max-w-sm text-center">
+                <div className="text-red-600 text-sm mb-2">Camera Error</div>
+                <div className="text-gray-700 text-xs mb-3">{scannerError}</div>
+                <Button 
+                  onClick={onClearError}
+                  size="sm"
+                  variant="outline"
+                >
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          )}
           
           {isProcessing && (
-            <div className="absolute inset-0 bg-white/80 flex items-center justify-center backdrop-blur-sm">
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center backdrop-blur-sm z-50">
               <div className="bg-white/90 backdrop-blur-md rounded-lg shadow-lg p-4 flex items-center gap-3">
                 <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
                 <span className="text-gray-900 text-sm">Processing...</span>
@@ -341,7 +393,7 @@ function ScannerInterface({
           )}
           
           {/* Clean Bottom Controls */}
-          <div className="absolute inset-x-0 bottom-0 bg-white border-t border-gray-200 p-4">
+          <div className="absolute inset-x-0 bottom-0 bg-white border-t border-gray-200 p-4 z-40">
             <div className="flex items-center justify-between max-w-md mx-auto">
               <Button
                 onClick={onSwitchCamera}

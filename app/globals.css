@@ -68,12 +68,8 @@
   }
 }
 
-/* Scanner custom styles */
+/* Scanner custom styles - simplified to avoid hiding essential elements */
 #qr-reader__camera_selection {
-  display: none !important;
-}
-
-#qr-reader__camera_permission_button {
   display: none !important;
 }
 
@@ -81,19 +77,7 @@
   display: none !important;
 }
 
-#qr-reader__dashboard_section {
-  display: none !important;
-}
-
-#qr-reader__dashboard_section_csr {
-  padding: 0 !important;
-}
-
 #qr-reader__header_message {
-  display: none !important;
-}
-
-#qr-reader__status_span {
   display: none !important;
 }
 
@@ -105,52 +89,13 @@
   display: none !important;
 }
 
-#qr-reader__dashboard_section_fsr > div {
-  display: none !important;
-}
-
+/* Hide branding and footer elements more selectively */
 img[alt="Info icon"] {
   display: none !important;
 }
 
-div[style*="font-size: 10px"] {
-  display: none !important;
-}
-
-span[style*="color: rgb(0, 128, 0)"] {
-  display: none !important;
-}
-
-div:has(img[alt="Info icon"]) {
-  display: none !important;
-}
-
-/* Hide any text containing "ScanApp" or "Powered by" */
-div:contains("ScanApp"),
-div:contains("Powered by"),
-span:contains("report issues") {
-  display: none !important;
-}
-
-/* Hide all scanner footer elements */
-#qr-reader div[style*="font-size: 10px"] {
-  display: none !important;
-}
-
-#qr-reader div[style*="font-size: 11px"] {
-  display: none !important;
-}
-
-#qr-reader div[style*="text-align: center"] > div:last-child {
-  display: none !important;
-}
-
-/* Additional cleanup */
-#qr-reader > div:last-child {
-  display: none !important;
-}
-
-#qr-reader__footer {
+/* Only hide specific small text elements that are likely branding */
+#qr-reader div[style*="font-size: 10px"][style*="text-align: center"] {
   display: none !important;
 }
 
@@ -169,16 +114,16 @@ span:contains("report issues") {
 
 #scanner-container {
   position: relative !important;
-  padding: 0 !important;
-  border: none !important;
   min-height: 400px !important;
   padding-bottom: 80px !important; /* Space for bottom controls */
+  background: transparent !important;
 }
 
 .scanner-custom {
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
+  position: relative;
 }
 
 /* Mobile optimizations */
