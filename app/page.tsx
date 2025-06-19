@@ -11,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import Scanner from '@/components/Scanner'
 import ScanResult from '@/components/ScanResult'
+import Image from 'next/image'
+import logo from '@/public/todo_nuevo_logo.svg'
 
 export default function Home() {
   const [scanResult, setScanResult] = useState<any>(null)
@@ -35,17 +37,9 @@ export default function Home() {
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <motion.div
-                initial={{ rotate: 0 }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, repeatType: 'reverse' }}
-                className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600"
-              >
-                <QrCode className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-              </motion.div>
+
               <div>
-                <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Ticket Scanner</h1>
-                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Professional ticketing system</p>
+                <Image src={logo} alt="Logo" width={150} height={150} />
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-3">

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import Image from 'next/image'
 
 interface TicketPreviewProps {
   ticket: {
@@ -116,11 +117,12 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
       if (canvasRef.current) {
         JsBarcode(canvasRef.current, value, {
           format: 'CODE128',
-          width: 2,
-          height: 60,
+          width: 1.2,
+          height: 30,
           displayValue: false,
-          background: '#f9fafb',
+          background: '#ffffff',
           lineColor: '#000000',
+          margin: 3
         })
       }
     }, [value])
@@ -160,7 +162,7 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
                 onClick={handlePrint}
                 size="sm"
                 variant="outline"
-                className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4"
+                className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4 mr-4"
               >
                 <Printer className="h-4 w-4" />
                 <span className="hidden sm:inline ml-1">Print</span>
@@ -198,58 +200,25 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
 
           {/* Printable Ticket Preview */}
           <div ref={printRef}>
-            <Card className="bg-white print:shadow-none">
-              <CardContent className="p-4 sm:p-6">
-                <div className="ticket">
-                  <div className="ticket-header">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">
-                      Event Ticket
-                    </h3>
-                    <p className="text-sm text-gray-500">Admit One</p>
-                    <p className="text-xs text-gray-400 mt-2">
-                      Created: {formatDate(ticket.createdAt)}
-                    </p>
-                    {ticket.redeemedAt && (
-                      <p className="text-xs text-green-600">
-                        Redeemed: {formatDate(ticket.redeemedAt)}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="ticket-content">
-                    {/* QR Code */}
-                    <div className="qr-section">
-                      <p className="text-xs text-gray-500 mb-3">QR Code</p>
-                      <div className="flex justify-center">
-                        <QRCode
-                          value={ticket.id}
-                          size={120}
-                          level="H"
-                          style={{ background: '#f9fafb', padding: '8px' }}
-                          className="sm:w-[150px] sm:h-[150px]"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Barcode */}
-                    <div className="barcode-section">
-                      <p className="text-xs text-gray-500 mb-3">Barcode</p>
-                      <div className="flex justify-center">
-                        <Barcode value={ticket.id} />
-                      </div>
-                    </div>
-
-                    {/* Ticket ID */}
-                    <div className="ticket-id">
-                      <p className="text-xs text-gray-500 mb-1">Ticket ID</p>
-                      <p className="font-mono font-bold text-sm text-gray-800 break-all">
-                        {ticket.id}
-                      </p>
-                    </div>
-                  </div>
+            <div className="relative" style={{ backgroundColor: '#f6f6f6', padding: '20px'}}>
+              {/* Custom Ticket Design */}
+              <div className="relative">
+                <Image
+                  src={`/${ticket.validDay}-ticket.png`}
+                  alt={`${ticket.validDay} ticket design`}
+                  width={400}
+                  height={600}
+                  className="w-full object-contain"
+                  style={{ height: '36rem' }}
+                  priority
+                />
+                
+                {/* Barcode overlay positioned 10px from bottom */}
+                <div className="absolute bottom-[12px] left-1/2 transform -translate-x-1/2">
+                  <Barcode value={ticket.id} />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Action Buttons */}

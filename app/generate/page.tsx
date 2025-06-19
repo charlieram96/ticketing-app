@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import Image from 'next/image'
 
 export default function GeneratePage() {
   const [quantity, setQuantity] = useState('')
@@ -54,9 +55,12 @@ export default function GeneratePage() {
       if (canvasRef.current) {
         JsBarcode(canvasRef.current, value, {
           format: 'CODE128',
-          width: 2,
-          height: 60,
+          width: 1,
+          height: 26,
           displayValue: false,
+          background: '#ffffff',
+          lineColor: '#000000',
+          margin: 3
         })
       }
     }, [value])
@@ -289,45 +293,31 @@ export default function GeneratePage() {
               </Card>
 
               {/* Printable Preview */}
-              <div ref={printRef} className="print-container">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2">
+              <div ref={printRef} className="print-container" style={{ padding: '20px', backgroundColor: '#f6f6f6' }}>
+                <div className="grid grid-cols-3 md:grid-cols-3 gap-6 print:grid-cols-3">
                   {generatedTickets.map((ticketId, index) => (
                     <motion.div
                       key={ticketId}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl p-6 shadow-lg print:break-inside-avoid border-2 border-gray-100"
+                      className="print:break-inside-avoid"
                     >
-                      <div className="text-center space-y-4">
-                        <div className="border-b border-gray-200 pb-4">
-                          <h3 className="text-xl font-bold text-gray-800 mb-1">
-                            Event Ticket
-                          </h3>
-                          <p className="text-sm text-gray-500">Admit One</p>
-                        </div>
+                      {/* Custom Ticket Design */}
+                      <div className="relative max-w-xs mx-auto">
+                        <Image
+                          src={`/${validDay}-ticket.png`}
+                          alt={`${validDay} ticket design`}
+                          width={500}
+                          height={1000}
+                          className="w-full object-contain"
+                          style={{ height: '29rem' }}
+                          priority
+                        />
                         
-                        {/* QR Code */}
-                        <div className="flex justify-center bg-gray-50 p-4 rounded-lg">
-                          <QRCode
-                            value={ticketId}
-                            size={120}
-                            level="H"
-                            style={{ background: 'white', padding: '8px' }}
-                          />
-                        </div>
-
-                        {/* Barcode */}
-                        <div className="flex justify-center bg-gray-50 p-3 rounded-lg">
+                        {/* Barcode overlay positioned 10px from bottom */}
+                        <div className="absolute bottom-[10px] left-1/2 transform -translate-x-1/2">
                           <Barcode value={ticketId} />
-                        </div>
-
-                        {/* Ticket ID */}
-                        <div className="border-t border-gray-200 pt-4">
-                          <p className="text-xs text-gray-500 mb-1">Ticket ID</p>
-                          <p className="font-mono font-bold text-sm text-gray-800 bg-gray-100 px-2 py-1 rounded">
-                            {ticketId}
-                          </p>
                         </div>
                       </div>
                     </motion.div>
@@ -356,8 +346,13 @@ export default function GeneratePage() {
             width: 100%;
           }
           @page {
-            margin: 0.5in;
+            margin: 0.3in;
             size: auto;
+          }
+          /* Ensure images print properly */
+          img {
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
           }
         }
       `}</style>
