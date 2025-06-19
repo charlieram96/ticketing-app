@@ -38,6 +38,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   )
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const scannerElementRef = useRef<HTMLDivElement>(null)
+  const isProcessingRef = useRef(false)
 
   // Clear any previous scan result when selectedDay changes
   useEffect(() => {
@@ -78,7 +79,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         scannerRef.current.render(
           async (decodedText) => {
             console.log('QR Code detected:', decodedText)
-            if (!isProcessing) {
+            if (!isProcessingRef.current) {
               await handleScan(decodedText)
             }
           },
@@ -110,6 +111,23 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   }, [isScanning, scanType, mode, facingMode])
 
   const handleScan = async (ticketId: string) => {
+    // Prevent multiple simultaneous scans
+    if (isProcessingRef.current) {
+      console.log('Already processing a scan, ignoring...')
+      return
+    }
+    
+    isProcessingRef.current = true
+    
+    // Immediately pause the scanner to prevent multiple scans
+    if (scannerRef.current) {
+      try {
+        scannerRef.current.pause()
+      } catch (error) {
+        console.log('Scanner pause error:', error)
+      }
+    }
+    
     setIsProcessing(true)
     
     try {
@@ -141,6 +159,17 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           details: data,
         }
         onScanResult(result)
+        
+        // For successful operations, wait longer before resuming
+        setTimeout(() => {
+          if (scannerRef.current) {
+            try {
+              scannerRef.current.resume()
+            } catch (error) {
+              console.log('Scanner resume error:', error)
+            }
+          }
+        }, mode === 'check-in' || mode === 'reset' ? 4000 : 3000)
       } else {
         onScanResult({
           ticketId,
@@ -148,6 +177,17 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           success: false,
           message: data.error || 'Failed to process ticket',
         })
+        
+        // For errors, resume after a shorter delay
+        setTimeout(() => {
+          if (scannerRef.current) {
+            try {
+              scannerRef.current.resume()
+            } catch (error) {
+              console.log('Scanner resume error:', error)
+            }
+          }
+        }, 2000)
       }
     } catch (error) {
       onScanResult({
@@ -156,13 +196,20 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         success: false,
         message: 'Network error. Please try again.',
       })
-    } finally {
-      setIsProcessing(false)
+      
+      // Resume after network errors
       setTimeout(() => {
         if (scannerRef.current) {
-          scannerRef.current.resume()
+          try {
+            scannerRef.current.resume()
+          } catch (error) {
+            console.log('Scanner resume error:', error)
+          }
         }
       }, 2000)
+    } finally {
+      setIsProcessing(false)
+      isProcessingRef.current = false
     }
   }
 
