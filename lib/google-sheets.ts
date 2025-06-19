@@ -46,9 +46,73 @@ export class GoogleSheetsService {
             values: [['Ticket ID', 'Status', 'Created At', 'Redeemed At', 'Reset At', 'History', 'Valid Day']],
           },
         })
+      } else {
+        // Check if header has all columns
+        const header = response.data.values[0]
+        if (header.length < 7 || header[6] !== 'Valid Day') {
+          // Update header to include Valid Day
+          await this.sheets.spreadsheets.values.update({
+            spreadsheetId: this.spreadsheetId,
+            range: 'A1:G1',
+            valueInputOption: 'RAW',
+            resource: {
+              values: [['Ticket ID', 'Status', 'Created At', 'Redeemed At', 'Reset At', 'History', 'Valid Day']],
+            },
+          })
+        }
       }
+
+      // Migrate existing data to ensure all rows have 7 columns
+      await this.migrateExistingData()
     } catch (error) {
       console.error('Error initializing sheet:', error)
+    }
+  }
+
+  async migrateExistingData() {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'A:G',
+      })
+
+      const rows = response.data.values || []
+      if (rows.length <= 1) return // No data to migrate
+
+      let needsUpdate = false
+      const updatedRows = rows.map((row: any[], index: number) => {
+        if (index === 0) return row // Skip header
+        
+        // Ensure each row has 7 columns
+        if (row.length < 7) {
+          needsUpdate = true
+          const newRow = [...row]
+          
+          // Ensure we have at least 6 columns (add empty strings if needed)
+          while (newRow.length < 6) {
+            newRow.push('')
+          }
+          
+          // If column 6 doesn't exist or is empty, add default validDay
+          if (!newRow[6]) {
+            newRow[6] = 'day1'
+          }
+          
+          return newRow
+        }
+        return row
+      })
+
+      if (needsUpdate) {
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: 'A:G',
+          valueInputOption: 'RAW',
+          resource: { values: updatedRows },
+        })
+      }
+    } catch (error) {
+      console.error('Error migrating data:', error)
     }
   }
 
@@ -64,9 +128,19 @@ export class GoogleSheetsService {
       validDay
     ])
 
-    await this.sheets.spreadsheets.values.append({
+    // First get the current data to find the next row
+    const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'A:G',
+      range: 'A:A',
+    })
+
+    const rows = response.data.values || []
+    const nextRow = rows.length + 1
+
+    // Update specific range starting from column A
+    await this.sheets.spreadsheets.values.update({
+      spreadsheetId: this.spreadsheetId,
+      range: `A${nextRow}:G${nextRow + values.length - 1}`,
       valueInputOption: 'RAW',
       resource: { values },
     })
