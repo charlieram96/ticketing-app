@@ -6,6 +6,7 @@ interface TicketData {
   createdAt: string
   redeemedAt?: string
   resetAt?: string
+  validDay: 'day1' | 'day2' | 'day3'
   history: {
     action: 'created' | 'redeemed' | 'reset' | 'viewed'
     timestamp: string
@@ -33,16 +34,16 @@ export class GoogleSheetsService {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'A1:F1',
+        range: 'A1:G1',
       })
 
       if (!response.data.values || response.data.values.length === 0) {
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'A1:F1',
+          range: 'A1:G1',
           valueInputOption: 'RAW',
           resource: {
-            values: [['Ticket ID', 'Status', 'Created At', 'Redeemed At', 'Reset At', 'History']],
+            values: [['Ticket ID', 'Status', 'Created At', 'Redeemed At', 'Reset At', 'History', 'Valid Day']],
           },
         })
       }
@@ -51,7 +52,7 @@ export class GoogleSheetsService {
     }
   }
 
-  async createTickets(tickets: string[]) {
+  async createTickets(tickets: string[], validDay: 'day1' | 'day2' | 'day3' = 'day1') {
     const timestamp = new Date().toISOString()
     const values = tickets.map(id => [
       id,
@@ -59,12 +60,13 @@ export class GoogleSheetsService {
       timestamp,
       '',
       '',
-      JSON.stringify([{ action: 'created', timestamp }])
+      JSON.stringify([{ action: 'created', timestamp }]),
+      validDay
     ])
 
     await this.sheets.spreadsheets.values.append({
       spreadsheetId: this.spreadsheetId,
-      range: 'A:F',
+      range: 'A:G',
       valueInputOption: 'RAW',
       resource: { values },
     })
@@ -75,7 +77,7 @@ export class GoogleSheetsService {
   async getTicket(ticketId: string): Promise<TicketData | null> {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'A:F',
+      range: 'A:G',
     })
 
     const rows = response.data.values || []
@@ -89,6 +91,7 @@ export class GoogleSheetsService {
       createdAt: ticketRow[2],
       redeemedAt: ticketRow[3] || undefined,
       resetAt: ticketRow[4] || undefined,
+      validDay: (ticketRow[6] || 'day1') as 'day1' | 'day2' | 'day3',
       history: JSON.parse(ticketRow[5] || '[]'),
     }
   }
@@ -96,7 +99,7 @@ export class GoogleSheetsService {
   async updateTicket(ticketId: string, action: 'redeem' | 'reset' | 'view') {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'A:F',
+      range: 'A:G',
     })
 
     const rows = response.data.values || []
@@ -121,7 +124,7 @@ export class GoogleSheetsService {
 
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.spreadsheetId,
-      range: `A${rowIndex + 1}:F${rowIndex + 1}`,
+      range: `A${rowIndex + 1}:G${rowIndex + 1}`,
       valueInputOption: 'RAW',
       resource: {
         values: [ticketRow],
@@ -134,7 +137,7 @@ export class GoogleSheetsService {
   async getAllTickets(): Promise<TicketData[]> {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'A:F',
+      range: 'A:G',
     })
 
     const rows = response.data.values || []
@@ -144,6 +147,7 @@ export class GoogleSheetsService {
       createdAt: row[2],
       redeemedAt: row[3] || undefined,
       resetAt: row[4] || undefined,
+      validDay: (row[6] || 'day1') as 'day1' | 'day2' | 'day3',
       history: JSON.parse(row[5] || '[]'),
     }))
   }

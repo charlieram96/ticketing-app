@@ -30,6 +30,8 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   const [isScanning, setIsScanning] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [scannerError, setScannerError] = useState<string | null>(null)
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false)
+  const [selectedDay, setSelectedDay] = useState<'day1' | 'day2' | 'day3'>('day1')
   // Default to back camera on mobile, front camera on desktop
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
     typeof window !== 'undefined' && window.innerWidth < 768 ? 'environment' : 'user'
@@ -106,10 +108,15 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     try {
       const action = mode === 'check-in' ? 'redeem' : mode === 'reset' ? 'reset' : 'view'
       
+      const requestBody: any = { action }
+      if (action === 'redeem') {
+        requestBody.selectedDay = selectedDay
+      }
+      
       const response = await fetch(`/api/tickets/${ticketId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify(requestBody),
       })
 
       const data = await response.json()
@@ -152,13 +159,33 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     }
   }
 
-  const switchCamera = () => {
+  const switchCamera = async () => {
     console.log('Switching camera from', facingMode, 'to', facingMode === 'user' ? 'environment' : 'user')
+    
+    setIsSwitchingCamera(true)
+    
+    // Stop current scanner
     if (scannerRef.current) {
-      scannerRef.current.clear()
+      try {
+        await scannerRef.current.clear()
+        scannerRef.current = null
+      } catch (error) {
+        console.error('Error clearing scanner:', error)
+      }
     }
-    setScannerError(null) // Clear any previous errors
-    setFacingMode(prev => prev === 'user' ? 'environment' : 'user')
+    
+    // Clear any previous errors
+    setScannerError(null)
+    
+    // Switch camera mode
+    const newFacingMode = facingMode === 'user' ? 'environment' : 'user'
+    setFacingMode(newFacingMode)
+    
+    // Reset switching state after a brief delay
+    setTimeout(() => {
+      setIsSwitchingCamera(false)
+      console.log('Camera switch complete, new mode:', newFacingMode)
+    }, 500)
   }
 
   const getModeConfig = (m: ScanMode) => {
@@ -166,23 +193,23 @@ export default function Scanner({ onScanResult }: ScannerProps) {
       case 'check-in':
         return { 
           icon: CheckCircle, 
-          color: 'bg-green-600 hover:bg-green-700',
-          bgColor: 'border-green-500/20 bg-green-500/10',
-          textColor: 'text-green-400'
+          color: 'bg-green-600 hover:bg-green-700 text-white',
+          bgColor: 'bg-green-50',
+          textColor: 'text-green-600'
         }
       case 'view':
         return { 
           icon: Eye, 
-          color: 'bg-blue-600 hover:bg-blue-700',
-          bgColor: 'border-blue-500/20 bg-blue-500/10',
-          textColor: 'text-blue-400'
+          color: 'bg-blue-600 hover:bg-blue-700 text-white',
+          bgColor: 'bg-blue-50',
+          textColor: 'text-blue-600'
         }
       case 'reset':
         return { 
           icon: RotateCcw, 
-          color: 'bg-orange-600 hover:bg-orange-700',
-          bgColor: 'border-orange-500/20 bg-orange-500/10',
-          textColor: 'text-orange-400'
+          color: 'bg-orange-600 hover:bg-orange-700 text-white',
+          bgColor: 'bg-orange-50',
+          textColor: 'text-orange-600'
         }
     }
   }
@@ -203,8 +230,8 @@ export default function Scanner({ onScanResult }: ScannerProps) {
                 variant={isActive ? "default" : "outline"}
                 className={`h-12 w-full flex items-center justify-center gap-2 ${
                   isActive 
-                    ? `${config.color} text-white` 
-                    : `bg-white ${config.textColor} border-gray-200 hover:bg-gray-50`
+                    ? config.color
+                    : `bg-gray-50/50 ${config.textColor} hover:${config.bgColor}`
                 }`}
               >
                 <IconComponent className="h-4 w-4" />
@@ -215,9 +242,33 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         })}
       </div>
 
+      {/* Day Selection for Check-in Mode */}
+      {mode === 'check-in' && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Event Day</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(['day1', 'day2', 'day3'] as const).map((day) => (
+              <motion.div key={day} whileTap={{ scale: 0.98 }}>
+                <Button
+                  onClick={() => setSelectedDay(day)}
+                  variant={selectedDay === day ? "default" : "outline"}
+                  className={`h-10 w-full ${
+                    selectedDay === day 
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {day === 'day1' ? 'Day 1' : day === 'day2' ? 'Day 2' : 'Day 3'}
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Scan Type Tabs */}
       <Tabs value={scanType} onValueChange={(value) => setScanType(value as ScanType)} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-100 h-12">
+        <TabsList className="grid w-full grid-cols-2 bg-white h-12">
           <TabsTrigger 
             value="qr" 
             className="h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 flex items-center justify-center"
@@ -238,6 +289,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           <ScannerInterface 
             isScanning={isScanning}
             isProcessing={isProcessing}
+            isSwitchingCamera={isSwitchingCamera}
             mode={mode}
             scanType={scanType}
             facingMode={facingMode}
@@ -257,6 +309,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           <ScannerInterface 
             isScanning={isScanning}
             isProcessing={isProcessing}
+            isSwitchingCamera={isSwitchingCamera}
             mode={mode}
             scanType={scanType}
             facingMode={facingMode}
@@ -279,6 +332,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
 interface ScannerInterfaceProps {
   isScanning: boolean
   isProcessing: boolean
+  isSwitchingCamera: boolean
   mode: ScanMode
   scanType: ScanType
   facingMode: 'user' | 'environment'
@@ -293,6 +347,7 @@ interface ScannerInterfaceProps {
 function ScannerInterface({ 
   isScanning, 
   isProcessing, 
+  isSwitchingCamera,
   mode, 
   scanType: _scanType, // Prefix with underscore to indicate intentionally unused
   facingMode,
@@ -304,15 +359,15 @@ function ScannerInterface({
   scannerElementRef 
 }: ScannerInterfaceProps) {
   const config = {
-    'check-in': { color: 'from-green-600 to-emerald-600', icon: CheckCircle },
-    'view': { color: 'from-blue-600 to-cyan-600', icon: Eye },
-    'reset': { color: 'from-orange-600 to-red-600', icon: RotateCcw }
+    'check-in': { color: 'bg-green-600 text-white', icon: CheckCircle },
+    'view': { color: 'bg-blue-600 text-white', icon: Eye },
+    'reset': { color: 'bg-orange-600 text-white', icon: RotateCcw }
   }[mode]
 
   const IconComponent = config.icon
 
   return (
-    <Card className="border-gray-200 bg-white/80 backdrop-blur-sm overflow-hidden shadow-lg">
+    <Card className="bg-gray-50/50 overflow-hidden">
       {!isScanning ? (
         <CardContent className="p-6 sm:p-12 text-center">
           <motion.div
@@ -320,8 +375,8 @@ function ScannerInterface({
             animate={{ scale: 1, opacity: 1 }}
             className="space-y-4 sm:space-y-6"
           >
-            <div className={`mx-auto h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br ${config.color} flex items-center justify-center`}>
-              <IconComponent className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+            <div className={`mx-auto h-16 w-16 sm:h-20 sm:w-20 rounded-full ${config.color} flex items-center justify-center`}>
+              <IconComponent className="h-8 w-8 sm:h-10 sm:w-10" />
             </div>
             
             <div className="space-y-2">
@@ -340,7 +395,7 @@ function ScannerInterface({
                   onStartScan()
                 }}
                 size="lg"
-                className={`bg-gradient-to-r ${config.color} hover:opacity-90 transition-opacity w-full h-14 text-base`}
+                className={`${config.color} hover:opacity-80 transition-opacity w-full h-14 text-base`}
               >
                 <Play className="mr-2 h-5 w-5" />
                 Start Scanning
@@ -349,10 +404,10 @@ function ScannerInterface({
               <Button
                 onClick={onSwitchCamera}
                 variant="outline"
-                size="sm"
-                className="w-full"
+                size="lg"
+                className="w-full min-h-[48px] touch-manipulation"
               >
-                <SwitchCamera className="mr-2 h-4 w-4" />
+                <SwitchCamera className="mr-2 h-5 w-5" />
                 Switch to {facingMode === 'user' ? 'Back' : 'Front'} Camera
               </Button>
             </div>
@@ -383,31 +438,40 @@ function ScannerInterface({
             </div>
           )}
           
-          {isProcessing && (
+          {(isProcessing || isSwitchingCamera) && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center backdrop-blur-sm z-50">
               <div className="bg-white/90 backdrop-blur-md rounded-lg shadow-lg p-4 flex items-center gap-3">
                 <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
-                <span className="text-gray-900 text-sm">Processing...</span>
+                <span className="text-gray-900 text-sm">
+                  {isSwitchingCamera ? 'Switching camera...' : 'Processing...'}
+                </span>
               </div>
             </div>
           )}
           
           {/* Clean Bottom Controls */}
-          <div className="absolute inset-x-0 bottom-0 bg-white border-t border-gray-200 p-4 z-40">
-            <div className="flex items-center justify-between max-w-md mx-auto">
+          <div className="absolute inset-x-0 bottom-0 bg-white p-4 z-40">
+            <div className="flex items-center justify-between max-w-md mx-auto gap-3">
               <Button
                 onClick={onSwitchCamera}
+                disabled={isSwitchingCamera}
                 variant="outline"
-                size="sm"
-                className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+                size="lg"
+                className="flex items-center gap-2 text-gray-700 hover:bg-gray-50 min-h-[48px] px-4 touch-manipulation disabled:opacity-50"
               >
-                <SwitchCamera className="h-4 w-4" />
-                <span className="hidden sm:inline">Switch</span>
+                {isSwitchingCamera ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <SwitchCamera className="h-5 w-5" />
+                )}
+                <span className="text-sm font-medium">
+                  {isSwitchingCamera ? 'Switching...' : facingMode === 'user' ? 'Back' : 'Front'}
+                </span>
               </Button>
               
-              <div className="text-center">
+              <div className="text-center flex-1">
                 <div className="text-sm font-medium text-gray-900">
-                  {mode === 'check-in' ? 'Check-in Mode' : mode === 'view' ? 'View Mode' : 'Reset Mode'}
+                  {mode === 'check-in' ? 'Check-in' : mode === 'view' ? 'View' : 'Reset'}
                 </div>
                 <div className="text-xs text-gray-500">
                   {facingMode === 'user' ? 'Front Camera' : 'Back Camera'}
@@ -417,11 +481,11 @@ function ScannerInterface({
               <Button
                 onClick={onStopScan}
                 variant="destructive"
-                size="sm"
-                className="flex items-center gap-2"
+                size="lg"
+                className="flex items-center gap-2 min-h-[48px] px-4 bg-red-600 hover:bg-red-700 text-white shadow-md touch-manipulation"
               >
-                <Square className="h-4 w-4" />
-                <span className="hidden sm:inline">Stop</span>
+                <Square className="h-5 w-5" />
+                <span className="text-sm font-medium">Stop</span>
               </Button>
             </div>
           </div>

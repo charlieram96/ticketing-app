@@ -18,6 +18,7 @@ interface Ticket {
   createdAt: string
   redeemedAt?: string
   resetAt?: string
+  validDay: 'day1' | 'day2' | 'day3'
 }
 
 export default function TicketsPage() {
@@ -41,10 +42,15 @@ export default function TicketsPage() {
     try {
       const response = await fetch('/api/tickets')
       const data = await response.json()
-      setTickets(data)
-      setFilteredTickets(data)
+      // Ensure data is an array
+      const ticketsData = Array.isArray(data) ? data : []
+      setTickets(ticketsData)
+      setFilteredTickets(ticketsData)
     } catch (error) {
       console.error('Error fetching tickets:', error)
+      // Set empty array on error
+      setTickets([])
+      setFilteredTickets([])
     } finally {
       setIsLoading(false)
     }
@@ -78,9 +84,16 @@ export default function TicketsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100">
+    <div className="min-h-screen bg-white relative overflow-hidden">
+      {/* Subtle Background Effects */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-20 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+      </div>
+      <div className="relative z-10">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md shadow-sm">
+      <header className="bg-white">
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-4">
@@ -99,7 +112,7 @@ export default function TicketsPage() {
               onClick={fetchTickets}
               variant="outline"
               size="sm"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 px-2 sm:px-4"
+              className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4"
             >
               <RefreshCw className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Refresh</span>
@@ -118,7 +131,7 @@ export default function TicketsPage() {
           {/* Stats Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
             <motion.div whileHover={{ scale: 1.02 }}>
-              <Card className="border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+              <Card className="bg-white">
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex flex-col sm:flex-row items-center sm:justify-between">
                     <div className="text-center sm:text-left">
@@ -134,7 +147,7 @@ export default function TicketsPage() {
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.02 }}>
-              <Card className="border-green-200 bg-green-50/80 backdrop-blur-sm shadow-sm">
+              <Card className="bg-white">
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex flex-col sm:flex-row items-center sm:justify-between">
                     <div className="text-center sm:text-left">
@@ -150,7 +163,7 @@ export default function TicketsPage() {
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.02 }}>
-              <Card className="border-blue-200 bg-blue-50/80 backdrop-blur-sm shadow-sm">
+              <Card className="bg-white">
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex flex-col sm:flex-row items-center sm:justify-between">
                     <div className="text-center sm:text-left">
@@ -166,7 +179,7 @@ export default function TicketsPage() {
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.02 }}>
-              <Card className="border-orange-200 bg-orange-50/80 backdrop-blur-sm shadow-sm">
+              <Card className="bg-white">
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex flex-col sm:flex-row items-center sm:justify-between">
                     <div className="text-center sm:text-left">
@@ -183,7 +196,7 @@ export default function TicketsPage() {
           </div>
 
           {/* Search and Filter */}
-          <Card className="border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle className="text-gray-900 flex items-center gap-2">
                 <Filter className="h-5 w-5" />
@@ -201,11 +214,11 @@ export default function TicketsPage() {
                     placeholder="Search by ticket ID..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                    className="pl-10 bg-white text-gray-900 placeholder:text-gray-400"
                   />
                 </div>
                 <Tabs value={filter} onValueChange={(value) => setFilter(value as any)} className="w-auto">
-                  <TabsList className="bg-gray-100">
+                  <TabsList className="bg-white">
                     <TabsTrigger value="all">All</TabsTrigger>
                     <TabsTrigger value="redeemed" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
                       Redeemed
@@ -220,7 +233,7 @@ export default function TicketsPage() {
           </Card>
 
           {/* Tickets Table */}
-          <Card className="border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle className="text-gray-900">Tickets</CardTitle>
               <CardDescription className="text-gray-600">
@@ -242,13 +255,14 @@ export default function TicketsPage() {
                   <p className="text-gray-600">No tickets found</p>
                 </div>
               ) : (
-                <div className="rounded-lg border border-gray-200 overflow-hidden">
+                <div className="rounded-lg overflow-hidden">
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow className="border-gray-200 hover:bg-gray-50">
+                        <TableRow className="hover:bg-gray-50">
                           <TableHead className="text-gray-700 min-w-[120px]">Ticket ID</TableHead>
                           <TableHead className="text-gray-700">Status</TableHead>
+                          <TableHead className="text-gray-700">Valid Day</TableHead>
                           <TableHead className="text-gray-700 hidden sm:table-cell">Created</TableHead>
                           <TableHead className="text-gray-700 hidden md:table-cell">Redeemed</TableHead>
                           <TableHead className="text-gray-700 w-12">
@@ -262,7 +276,7 @@ export default function TicketsPage() {
                             key={ticket.id}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="border-gray-200 hover:bg-blue-50 cursor-pointer transition-all duration-200 hover:border-blue-300"
+                            className="hover:bg-gray-50 cursor-pointer transition-all duration-200"
                             onClick={() => setSelectedTicket(ticket)}
                           >
                             <TableCell className="font-mono text-gray-900 text-sm">
@@ -276,8 +290,8 @@ export default function TicketsPage() {
                                 variant={ticket.status === 'redeemed' ? 'default' : 'secondary'}
                                 className={
                                   ticket.status === 'redeemed'
-                                    ? 'bg-green-100 text-green-700 border-green-300 text-xs'
-                                    : 'bg-blue-100 text-blue-700 border-blue-300 text-xs'
+                                    ? 'bg-green-100 text-green-700 text-xs'
+                                    : 'bg-blue-100 text-blue-700 text-xs'
                                 }
                               >
                                 {ticket.status === 'redeemed' ? (
@@ -287,6 +301,20 @@ export default function TicketsPage() {
                                 )}
                                 <span className="hidden sm:inline">{ticket.status.toUpperCase()}</span>
                                 <span className="sm:hidden">{ticket.status === 'redeemed' ? 'R' : 'A'}</span>
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  ticket.validDay === 'day1'
+                                    ? 'bg-purple-50 text-purple-700 border-purple-200 text-xs'
+                                    : ticket.validDay === 'day2'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200 text-xs'
+                                    : 'bg-orange-50 text-orange-700 border-orange-200 text-xs'
+                                }
+                              >
+                                {ticket.validDay === 'day1' ? 'Day 1' : ticket.validDay === 'day2' ? 'Day 2' : 'Day 3'}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-gray-600 text-sm hidden sm:table-cell">
@@ -315,6 +343,7 @@ export default function TicketsPage() {
         ticket={selectedTicket} 
         onClose={() => setSelectedTicket(null)} 
       />
+      </div>
     </div>
   )
 }

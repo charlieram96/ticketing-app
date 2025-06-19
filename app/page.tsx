@@ -22,9 +22,16 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100">
+    <div className="min-h-screen bg-white relative overflow-hidden">
+      {/* Subtle Background Effects */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-20 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+      </div>
+      <div className="relative z-10">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md shadow-sm">
+      <header className="bg-white">
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -43,13 +50,13 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-1 sm:gap-3">
               <Link href="/tickets">
-                <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-100 px-2 sm:px-4">
+                <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4">
                   <Ticket className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Manage Tickets</span>
                 </Button>
               </Link>
               <Link href="/generate">
-                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-2 sm:px-4">
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 px-2 sm:px-4">
                   <Plus className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Generate</span>
                 </Button>
@@ -84,7 +91,7 @@ export default function Home() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="mb-6"
             >
-              <Badge variant="secondary" className="mb-3 sm:mb-4 bg-blue-100 text-blue-700 border-blue-200">
+              <Badge variant="secondary" className="mb-3 sm:mb-4 bg-blue-50 text-blue-600 border-blue-200">
                 <Scan className="mr-1 h-3 w-3" />
                 <span className="hidden sm:inline">Professional </span>Scanning System
               </Badge>
@@ -103,7 +110,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Card className="border-gray-200 bg-white/80 backdrop-blur-md shadow-lg">
+            <Card className="bg-gray-50/50">
               <CardHeader className="text-center">
                 <CardTitle className="text-gray-900">Scanner Control</CardTitle>
                 <CardDescription className="text-gray-600">
@@ -123,7 +130,7 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
           >
-            <Card className="border-green-200 bg-green-50/80 backdrop-blur-sm shadow-sm">
+            <Card className="bg-gray-50/50">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="rounded-full bg-green-100 p-2">
@@ -137,7 +144,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="border-blue-200 bg-blue-50/80 backdrop-blur-sm shadow-sm">
+            <Card className="bg-gray-50/50">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="rounded-full bg-blue-100 p-2">
@@ -151,7 +158,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="border-orange-200 bg-orange-50/80 backdrop-blur-sm shadow-sm">
+            <Card className="bg-gray-50/50">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="rounded-full bg-orange-100 p-2">
@@ -170,6 +177,7 @@ export default function Home() {
 
       {/* Scan Result Modal */}
       <ScanResult result={scanResult} onClose={() => setScanResult(null)} />
+      </div>
     </div>
   )
 }

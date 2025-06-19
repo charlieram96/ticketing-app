@@ -17,6 +17,7 @@ interface TicketPreviewProps {
     createdAt: string
     redeemedAt?: string
     resetAt?: string
+    validDay: 'day1' | 'day2' | 'day3'
   } | null
   onClose: () => void
 }
@@ -141,7 +142,7 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
 
   return (
     <Dialog open={!!ticket} onOpenChange={() => onClose()}>
-      <DialogContent className="w-[95vw] sm:max-w-lg bg-white border-gray-200 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] sm:max-w-lg bg-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-gray-900 flex items-center justify-between text-lg">
             Ticket Preview
@@ -150,7 +151,7 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
                 onClick={handleDownload}
                 size="sm"
                 variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 px-2 sm:px-4"
+                className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4"
               >
                 <Download className="h-4 w-4" />
                 <span className="hidden sm:inline ml-1">Download</span>
@@ -159,7 +160,7 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
                 onClick={handlePrint}
                 size="sm"
                 variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 px-2 sm:px-4"
+                className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4"
               >
                 <Printer className="h-4 w-4" />
                 <span className="hidden sm:inline ml-1">Print</span>
@@ -169,8 +170,8 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
         </DialogHeader>
 
         <div className="space-y-4 sm:space-y-6">
-          {/* Status Badge */}
-          <div className="flex justify-center">
+          {/* Status and Valid Day Badges */}
+          <div className="flex justify-center gap-3">
             <Badge
               variant={ticket.status === 'redeemed' ? 'default' : 'secondary'}
               className={
@@ -181,11 +182,23 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
             >
               {ticket.status.toUpperCase()}
             </Badge>
+            <Badge
+              variant="outline"
+              className={
+                ticket.validDay === 'day1'
+                  ? 'bg-purple-50 text-purple-700 border-purple-200'
+                  : ticket.validDay === 'day2'
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : 'bg-orange-50 text-orange-700 border-orange-200'
+              }
+            >
+              Valid {ticket.validDay === 'day1' ? 'Day 1' : ticket.validDay === 'day2' ? 'Day 2' : 'Day 3'}
+            </Badge>
           </div>
 
           {/* Printable Ticket Preview */}
           <div ref={printRef}>
-            <Card className="bg-white border-gray-200 print:shadow-none">
+            <Card className="bg-white print:shadow-none">
               <CardContent className="p-4 sm:p-6">
                 <div className="ticket">
                   <div className="ticket-header">
@@ -251,7 +264,7 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
             <Button
               onClick={onClose}
               variant="outline"
-              className="w-full sm:flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="w-full sm:flex-1 text-gray-700 hover:bg-gray-50"
             >
               Close
             </Button>

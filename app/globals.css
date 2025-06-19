@@ -153,12 +153,36 @@ img[alt="Info icon"] {
   }
 }
 
+/* Animation delays for background effects */
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
 /* Touch-friendly button styles */
 @media (pointer: coarse) {
   button, .cursor-pointer {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px;
+    min-width: 48px;
+    touch-action: manipulation;
   }
+}
+
+/* Improve button touch targets */
+.touch-manipulation {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scanner bottom controls optimization */
+#scanner-container + div button {
+  min-height: 48px !important;
+  touch-action: manipulation !important;
 }
 
 /* Print styles */

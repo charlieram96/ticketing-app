@@ -44,14 +44,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="border-gray-200 bg-white/90 backdrop-blur-md shadow-2xl">
+        <Card className="bg-white shadow-2xl">
           <CardHeader className="text-center space-y-4 p-4 sm:p-6">
             <motion.div
               initial={{ scale: 0 }}
@@ -85,7 +85,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 h-12"
+                    className="pl-10 bg-white text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 h-12"
                     autoFocus
                     disabled={isLoading}
                   />
@@ -93,7 +93,7 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <Alert className="border-red-200 bg-red-50">
+                <Alert className="bg-red-50">
                   <AlertDescription className="text-red-700 text-sm">
                     {error}
                   </AlertDescription>
