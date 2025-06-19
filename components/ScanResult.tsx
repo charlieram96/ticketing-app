@@ -17,6 +17,7 @@ interface ScanResultProps {
       createdAt?: string
       redeemedAt?: string
       resetAt?: string
+      validDay?: 'day1' | 'day2' | 'day3'
       history?: { action: string; timestamp: string }[]
     }
   } | null
@@ -99,6 +100,24 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
                     {result.status.toUpperCase()}
                   </Badge>
                 </div>
+                
+                {result.details.validDay && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Valid Day:</span>
+                    <Badge
+                      variant="outline"
+                      className={
+                        result.details.validDay === 'day1'
+                          ? 'bg-purple-600/20 text-purple-400 border-purple-600/30'
+                          : result.details.validDay === 'day2'
+                          ? 'bg-blue-600/20 text-blue-400 border-blue-600/30'
+                          : 'bg-orange-600/20 text-orange-400 border-orange-600/30'
+                      }
+                    >
+                      {result.details.validDay === 'day1' ? 'Day 1' : result.details.validDay === 'day2' ? 'Day 2' : 'Day 3'}
+                    </Badge>
+                  </div>
+                )}
                 
                 {result.details.createdAt && (
                   <div className="flex items-center justify-between">

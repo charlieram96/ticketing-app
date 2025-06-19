@@ -21,7 +21,7 @@ interface ScanResult {
 }
 
 interface ScannerProps {
-  onScanResult: (result: ScanResult) => void
+  onScanResult: (result: ScanResult | null) => void
 }
 
 export default function Scanner({ onScanResult }: ScannerProps) {
@@ -38,6 +38,13 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   )
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const scannerElementRef = useRef<HTMLDivElement>(null)
+
+  // Clear any previous scan result when selectedDay changes
+  useEffect(() => {
+    if (mode === 'check-in') {
+      onScanResult(null)
+    }
+  }, [selectedDay, mode, onScanResult])
 
   useEffect(() => {
     if (isScanning && scannerElementRef.current) {
