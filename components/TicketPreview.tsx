@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { X, Download, Printer } from 'lucide-react'
+import { X, Download, FileSpreadsheet } from 'lucide-react'
 import QRCode from 'react-qr-code'
 import JsBarcode from 'jsbarcode'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import Image from 'next/image'
+import { generateTicketsPDF } from '@/components/TicketsPDF'
 
 interface TicketPreviewProps {
   ticket: {
@@ -18,129 +19,65 @@ interface TicketPreviewProps {
     createdAt: string
     redeemedAt?: string
     resetAt?: string
-    validDay: 'day1' | 'day2' | 'day3'
+    validDay: 'day1' | 'day2' | 'day3' | 'day4'
   } | null
   onClose: () => void
 }
 
 export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
-  const printRef = useRef<HTMLDivElement>(null)
-
-  const handlePrint = () => {
-    if (printRef.current) {
-      const printWindow = window.open('', '_blank')
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Ticket - ${ticket?.id}</title>
-              <style>
-                body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-                .ticket { 
-                  max-width: 400px; 
-                  margin: 0 auto; 
-                  padding: 20px; 
-                  border: 2px solid #e5e7eb; 
-                  border-radius: 12px;
-                  background: white;
-                }
-                .ticket-header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; }
-                .ticket-content { text-align: center; }
-                .qr-section, .barcode-section { 
-                  margin: 20px 0; 
-                  padding: 15px; 
-                  background: #f9fafb; 
-                  border-radius: 8px; 
-                }
-                .ticket-id { 
-                  font-family: monospace; 
-                  font-weight: bold; 
-                  font-size: 14px; 
-                  background: #f3f4f6; 
-                  padding: 8px; 
-                  border-radius: 4px; 
-                  margin-top: 15px;
-                }
-                @media print {
-                  body { margin: 0; }
-                  .ticket { border: 1px solid #000; }
-                }
-              </style>
-            </head>
-            <body>
-              ${printRef.current.innerHTML}
-            </body>
-          </html>
-        `)
-        printWindow.document.close()
-        printWindow.print()
-        printWindow.close()
-      }
+  const handleGeneratePDF = async () => {
+    if (ticket) {
+      await generateTicketsPDF([ticket.id], ticket.validDay)
     }
   }
 
-  const handleDownload = () => {
-    if (printRef.current && ticket) {
-      // Create a canvas to render the ticket
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        canvas.width = 400
-        canvas.height = 600
-        
-        // White background
-        ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        
-        // Add ticket content (simplified version)
-        ctx.fillStyle = 'black'
-        ctx.font = 'bold 20px Arial'
-        ctx.textAlign = 'center'
-        ctx.fillText('Event Ticket', canvas.width / 2, 40)
-        
-        ctx.font = '16px monospace'
-        ctx.fillText(ticket.id, canvas.width / 2, canvas.height - 40)
-        
-        // Download as image
-        const link = document.createElement('a')
-        link.download = `ticket-${ticket.id}.png`
-        link.href = canvas.toDataURL()
-        link.click()
-      }
+  const handleDownload = async () => {
+    if (ticket) {
+      await generateTicketsPDF([ticket.id], ticket.validDay)
     }
   }
 
   const Barcode = ({ value }: { value: string }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-      if (canvasRef.current) {
+      if (canvasRef.current && containerRef.current) {
+        // Generate barcode horizontally first
         JsBarcode(canvasRef.current, value, {
           format: 'CODE128',
-          width: 1.2,
-          height: 30,
+          width: 2,
+          height: 500, // This will become the width after rotation
           displayValue: false,
           background: '#ffffff',
           lineColor: '#000000',
-          margin: 3
+          margin: 0,
+          fontSize: 14,
+          textMargin: 0,
+          flat: false
         })
+        
+        // Apply rotation to the container
+        containerRef.current.style.transform = 'rotate(90deg)'
+        containerRef.current.style.transformOrigin = 'center center'
       }
     }, [value])
 
-    return <canvas ref={canvasRef} />
+    return (
+      <div ref={containerRef} style={{ 
+        width: '70px', // This becomes height after rotation
+        height: '500px', // This becomes width after rotation
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <canvas ref={canvasRef} />
+      </div>
+    )
   }
 
   if (!ticket) return null
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   return (
     <Dialog open={!!ticket} onOpenChange={() => onClose()}>
@@ -159,13 +96,13 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
                 <span className="hidden sm:inline ml-1">Download</span>
               </Button>
               <Button
-                onClick={handlePrint}
+                onClick={handleGeneratePDF}
                 size="sm"
                 variant="outline"
                 className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4 mr-4"
               >
-                <Printer className="h-4 w-4" />
-                <span className="hidden sm:inline ml-1">Print</span>
+                <FileSpreadsheet className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Download PDF</span>
               </Button>
             </div>
           </DialogTitle>
@@ -191,18 +128,26 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
                   ? 'bg-purple-50 text-purple-700 border-purple-200'
                   : ticket.validDay === 'day2'
                   ? 'bg-blue-50 text-blue-700 border-blue-200'
-                  : 'bg-orange-50 text-orange-700 border-orange-200'
+                  : ticket.validDay === 'day3'
+                  ? 'bg-orange-50 text-orange-700 border-orange-200'
+                  : 'bg-green-50 text-green-700 border-green-200'
               }
             >
-              Valid {ticket.validDay === 'day1' ? 'Day 1' : ticket.validDay === 'day2' ? 'Day 2' : 'Day 3'}
+              Valid {ticket.validDay === 'day1' ? 'Day 1' : ticket.validDay === 'day2' ? 'Day 2' : ticket.validDay === 'day3' ? 'Day 3' : 'Day 4'}
             </Badge>
           </div>
 
-          {/* Printable Ticket Preview */}
-          <div ref={printRef}>
+          {/* Ticket Preview */}
+          <div>
             <div className="relative" style={{ backgroundColor: '#f6f6f6', padding: '20px'}}>
               {/* Custom Ticket Design */}
-              <div className="relative">
+              <div className="relative flex">
+                {/* Barcode on the left side */}
+                <div className="absolute left-0 top-0 h-full z-10" style={{ width: '70px' }}>
+                  <Barcode value={ticket.id} />
+                </div>
+                
+                {/* Ticket image */}
                 <Image
                   src={`/${ticket.validDay}-ticket.png`}
                   alt={`${ticket.validDay} ticket design`}
@@ -212,11 +157,6 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
                   style={{ height: '36rem' }}
                   priority
                 />
-                
-                {/* Barcode overlay positioned 10px from bottom */}
-                <div className="absolute bottom-[12px] left-1/2 transform -translate-x-1/2">
-                  <Barcode value={ticket.id} />
-                </div>
               </div>
             </div>
           </div>
@@ -224,11 +164,11 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button
-              onClick={handlePrint}
+              onClick={handleGeneratePDF}
               className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700"
             >
-              <Printer className="mr-2 h-4 w-4" />
-              Print Ticket
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              Download PDF
             </Button>
             <Button
               onClick={onClose}

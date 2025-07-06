@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Plus, Download, Printer, Zap, FileText, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Plus, Download, FileSpreadsheet, Zap, FileText, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import QRCode from 'react-qr-code'
 import JsBarcode from 'jsbarcode'
@@ -12,14 +12,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import Image from 'next/image'
+import { generateTicketsPDF } from '@/components/TicketsPDF'
 
 export default function GeneratePage() {
   const [quantity, setQuantity] = useState('')
-  const [validDay, setValidDay] = useState<'day1' | 'day2' | 'day3'>('day1')
+  const [validDay, setValidDay] = useState<'day1' | 'day2' | 'day3' | 'day4'>('day1')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedTickets, setGeneratedTickets] = useState<string[]>([])
   const [showPreview, setShowPreview] = useState(false)
-  const printRef = useRef<HTMLDivElement>(null)
 
   const handleGenerate = async () => {
     if (!quantity || parseInt(quantity) < 1) return
@@ -44,28 +44,44 @@ export default function GeneratePage() {
     }
   }
 
-  const handlePrint = () => {
-    window.print()
+  const handleGeneratePDF = async () => {
+    await generateTicketsPDF(generatedTickets, validDay)
   }
 
   const Barcode = ({ value }: { value: string }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-      if (canvasRef.current) {
+      if (canvasRef.current && containerRef.current) {
+        // Generate barcode horizontally first
         JsBarcode(canvasRef.current, value, {
           format: 'CODE128',
-          width: 1,
-          height: 26,
+          width: 5,
+          height: 120, // This will become the width after rotation
           displayValue: false,
           background: '#ffffff',
           lineColor: '#000000',
-          margin: 3
+          margin: 0,
+          fontSize: 14,
+          textMargin: 0,
+          flat: false
         })
+        
       }
     }, [value])
 
-    return <canvas ref={canvasRef} />
+    return (
+      <div ref={containerRef} style={{ 
+        width: '30px', // This becomes height after rotation
+        height: '100px', // This becomes width after rotation
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <canvas ref={canvasRef} style={{ transform: 'rotate(90deg)', transformOrigin: 'center center' }}/>
+      </div>
+    )
   }
 
   return (
@@ -149,8 +165,8 @@ export default function GeneratePage() {
                     <label className="text-sm font-medium text-gray-700">
                       Valid Event Day
                     </label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(['day1', 'day2', 'day3'] as const).map((day) => (
+                    <div className="grid grid-cols-4 gap-3">
+                      {(['day1', 'day2', 'day3', 'day4'] as const).map((day) => (
                         <motion.div key={day} whileTap={{ scale: 0.98 }}>
                           <Button
                             type="button"
@@ -162,7 +178,7 @@ export default function GeneratePage() {
                                 : 'bg-white text-gray-700 hover:bg-gray-50'
                             }`}
                           >
-                            {day === 'day1' ? 'Day 1' : day === 'day2' ? 'Day 2' : 'Day 3'}
+                            {day === 'day1' ? 'Day 1' : day === 'day2' ? 'Day 2' : day === 'day3' ? 'Day 3' : 'Day 4'}
                           </Button>
                         </motion.div>
                       ))}
@@ -217,11 +233,11 @@ export default function GeneratePage() {
                   <CardContent className="pt-6">
                     <div className="space-y-3">
                       <div className="rounded-full bg-gray-100 p-3 w-fit">
-                        <Printer className="h-6 w-6 text-gray-600" />
+                        <FileSpreadsheet className="h-6 w-6 text-gray-600" />
                       </div>
-                      <h3 className="font-semibold text-gray-900">Print Ready</h3>
+                      <h3 className="font-semibold text-gray-900">PDF Export</h3>
                       <p className="text-sm text-gray-600">
-                        Professional layout optimized for printing and cutting
+                        Export tickets as high-quality PDF for distribution
                       </p>
                     </div>
                   </CardContent>
@@ -269,11 +285,11 @@ export default function GeneratePage() {
                     </div>
                     <div className="flex gap-3">
                       <Button
-                        onClick={handlePrint}
+                        onClick={handleGeneratePDF}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
-                        <Printer className="mr-2 h-4 w-4" />
-                        Print All
+                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                        Download PDF
                       </Button>
                       <Button
                         onClick={() => {
@@ -292,37 +308,44 @@ export default function GeneratePage() {
                 </CardHeader>
               </Card>
 
-              {/* Printable Preview */}
-              <div ref={printRef} className="print-container" style={{ padding: '20px', backgroundColor: '#f6f6f6' }}>
-                <div className="grid grid-cols-3 md:grid-cols-3 gap-6 print:grid-cols-3">
-                  {generatedTickets.map((ticketId, index) => (
-                    <motion.div
-                      key={ticketId}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="print:break-inside-avoid"
-                    >
-                      {/* Custom Ticket Design */}
-                      <div className="relative max-w-xs mx-auto">
-                        <Image
-                          src={`/${validDay}-ticket.png`}
-                          alt={`${validDay} ticket design`}
-                          width={500}
-                          height={1000}
-                          className="w-full object-contain"
-                          style={{ height: '29rem' }}
-                          priority
-                        />
-                        
-                        {/* Barcode overlay positioned 10px from bottom */}
-                        <div className="absolute bottom-[10px] left-1/2 transform -translate-x-1/2">
-                          <Barcode value={ticketId} />
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+              {/* Tickets Preview */}
+              <div className="print-container" style={{ backgroundColor: '#f6f6f6' }}>
+                {/* Split tickets into pages of 18 (6 rows x 3 columns) */}
+                {Array.from({ length: Math.ceil(generatedTickets.length / 15) }, (_, pageIndex) => (
+                  <div 
+                    key={pageIndex} 
+                    style={{ 
+                      padding: '20px',
+                      pageBreakAfter: pageIndex < Math.ceil(generatedTickets.length / 15) - 1 ? 'always' : 'auto',
+                      minHeight: '100vh',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <div className="grid grid-cols-3 md:grid-cols-3 gap-6 print:grid-cols-3" style={{ gridTemplateRows: 'repeat(6, 176px)' }}>
+                      {generatedTickets.slice(pageIndex * 15, (pageIndex + 1) * 15).map((ticketId, index) => (
+                        <motion.div
+                          key={ticketId}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="print:break-inside-avoid"
+                          style={{ height: '176px' }}
+                        >
+                          {/* Custom Ticket Design */}
+                          <div className="relative max-w-xs mx-auto flex h-[176px] w-[269px]" >
+                            {/* Barcode on the left side */}
+                            <div className="absolute left-0 top-0 z-10" style={{ width: '60px', height: '250px', transform: 'scale(.19) translateX(-44px) translateY(-117px)' }}>
+                              <Barcode value={ticketId} />
+                            </div>
+                            
+                            {/* Ticket image */}
+                            <img src={`/${validDay}-ticket.png`} alt={`${validDay} ticket design`} className="w-full object-cover" style={{ width: '269px !important', height: '176px !important', }} />
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -353,6 +376,23 @@ export default function GeneratePage() {
           img {
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          /* Preserve canvas and transform styles during print */
+          canvas {
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          /* Force barcode container to maintain its transform during print */
+          div[style*="transform"] {
+            -webkit-transform: scale(.19) translateX(-40px) translateY(640px) !important;
+            transform: scale(.19) translateX(-40px) translateY(640px) !important;
+          }
+          /* Ensure barcode canvas maintains rotation */
+          canvas[style*="rotate"] {
+            -webkit-transform: rotate(90deg) !important;
+            transform: rotate(90deg) !important;
           }
         }
       `}</style>

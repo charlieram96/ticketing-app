@@ -18,7 +18,7 @@ interface Ticket {
   createdAt: string
   redeemedAt?: string
   resetAt?: string
-  validDay: 'day1' | 'day2' | 'day3'
+  validDay: 'day1' | 'day2' | 'day3' | 'day4'
 }
 
 export default function TicketsPage() {
@@ -27,7 +27,7 @@ export default function TicketsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<'all' | 'redeemed' | 'unredeemed'>('all')
-  const [dayFilter, setDayFilter] = useState<'all' | 'day1' | 'day2' | 'day3'>('all')
+  const [dayFilter, setDayFilter] = useState<'all' | 'day1' | 'day2' | 'day3' | 'day4'>('all')
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
 
   useEffect(() => {
@@ -89,9 +89,11 @@ export default function TicketsPage() {
     day1: tickets.filter(t => t.validDay === 'day1').length,
     day2: tickets.filter(t => t.validDay === 'day2').length,
     day3: tickets.filter(t => t.validDay === 'day3').length,
+    day4: tickets.filter(t => t.validDay === 'day4').length,
     day1Redeemed: tickets.filter(t => t.validDay === 'day1' && t.status === 'redeemed').length,
     day2Redeemed: tickets.filter(t => t.validDay === 'day2' && t.status === 'redeemed').length,
-    day3Redeemed: tickets.filter(t => t.validDay === 'day3' && t.status === 'redeemed').length
+    day3Redeemed: tickets.filter(t => t.validDay === 'day3' && t.status === 'redeemed').length,
+    day4Redeemed: tickets.filter(t => t.validDay === 'day4' && t.status === 'redeemed').length
   }
 
   return (
@@ -207,7 +209,7 @@ export default function TicketsPage() {
           </div>
 
           {/* Day Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             <motion.div whileHover={{ scale: 1.02 }}>
               <Card className="bg-white">
                 <CardContent className="p-3 sm:p-6">
@@ -288,6 +290,33 @@ export default function TicketsPage() {
                 </CardContent>
               </Card>
             </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }}>
+              <Card className="bg-white">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-gray-700">Day 4</h3>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        {stats.day4} tickets
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-2xl font-bold text-gray-900">{stats.day4Redeemed}/{stats.day4}</p>
+                      <p className="text-sm text-gray-600">
+                        {stats.day4 > 0 ? Math.round((stats.day4Redeemed / stats.day4) * 100) : 0}%
+                      </p>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${stats.day4 > 0 ? (stats.day4Redeemed / stats.day4) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
           {/* Search and Filter */}
@@ -329,7 +358,7 @@ export default function TicketsPage() {
               <div className="mt-4">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Day</label>
                 <Tabs value={dayFilter} onValueChange={(value) => setDayFilter(value as any)} className="w-full">
-                  <TabsList className="grid w-full grid-cols-4 bg-white">
+                  <TabsList className="grid w-full grid-cols-5 bg-white">
                     <TabsTrigger value="all">All Days</TabsTrigger>
                     <TabsTrigger value="day1" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
                       Day 1
@@ -339,6 +368,9 @@ export default function TicketsPage() {
                     </TabsTrigger>
                     <TabsTrigger value="day3" className="data-[state=active]:bg-orange-600 data-[state=active]:text-white">
                       Day 3
+                    </TabsTrigger>
+                    <TabsTrigger value="day4" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+                      Day 4
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -425,10 +457,12 @@ export default function TicketsPage() {
                                     ? 'bg-purple-50 text-purple-700 border-purple-200 text-xs'
                                     : ticket.validDay === 'day2'
                                     ? 'bg-blue-50 text-blue-700 border-blue-200 text-xs'
-                                    : 'bg-orange-50 text-orange-700 border-orange-200 text-xs'
+                                    : ticket.validDay === 'day3'
+                                    ? 'bg-orange-50 text-orange-700 border-orange-200 text-xs'
+                                    : 'bg-green-50 text-green-700 border-green-200 text-xs'
                                 }
                               >
-                                {ticket.validDay === 'day1' ? 'Day 1' : ticket.validDay === 'day2' ? 'Day 2' : 'Day 3'}
+                                {ticket.validDay === 'day1' ? 'Day 1' : ticket.validDay === 'day2' ? 'Day 2' : ticket.validDay === 'day3' ? 'Day 3' : 'Day 4'}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-gray-600 text-sm hidden sm:table-cell">

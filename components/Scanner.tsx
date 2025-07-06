@@ -31,7 +31,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [scannerError, setScannerError] = useState<string | null>(null)
   const [isSwitchingCamera, setIsSwitchingCamera] = useState(false)
-  const [selectedDay, setSelectedDay] = useState<'day1' | 'day2' | 'day3'>('day1')
+  const [selectedDay, setSelectedDay] = useState<'day1' | 'day2' | 'day3' | 'day4'>('day1')
   // Default to back camera on mobile, front camera on desktop
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
     typeof window !== 'undefined' && window.innerWidth < 768 ? 'environment' : 'user'
@@ -300,8 +300,8 @@ export default function Scanner({ onScanResult }: ScannerProps) {
       {mode === 'check-in' && (
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Event Day</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(['day1', 'day2', 'day3'] as const).map((day) => (
+          <div className="grid grid-cols-4 gap-2">
+            {(['day1', 'day2', 'day3', 'day4'] as const).map((day) => (
               <motion.div key={day} whileTap={{ scale: 0.98 }}>
                 <Button
                   onClick={() => setSelectedDay(day)}
@@ -312,7 +312,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  {day === 'day1' ? 'Day 1' : day === 'day2' ? 'Day 2' : 'Day 3'}
+                  {day === 'day1' ? 'Day 1' : day === 'day2' ? 'Day 2' : day === 'day3' ? 'Day 3' : 'Day 4'}
                 </Button>
               </motion.div>
             ))}
