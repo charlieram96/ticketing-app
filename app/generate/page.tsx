@@ -57,8 +57,8 @@ export default function GeneratePage() {
         // Generate barcode horizontally first
         JsBarcode(canvasRef.current, value, {
           format: 'CODE128',
-          width: 5,
-          height: 120, // This will become the width after rotation
+          width: 6.7,
+          height: 170, // This will become the width after rotation
           displayValue: false,
           background: '#ffffff',
           lineColor: '#000000',
@@ -311,35 +311,35 @@ export default function GeneratePage() {
               {/* Tickets Preview */}
               <div className="print-container" style={{ backgroundColor: '#f6f6f6' }}>
                 {/* Split tickets into pages of 18 (6 rows x 3 columns) */}
-                {Array.from({ length: Math.ceil(generatedTickets.length / 15) }, (_, pageIndex) => (
+                {Array.from({ length: Math.ceil(generatedTickets.length / 8) }, (_, pageIndex) => (
                   <div 
                     key={pageIndex} 
                     style={{ 
                       padding: '20px',
-                      pageBreakAfter: pageIndex < Math.ceil(generatedTickets.length / 15) - 1 ? 'always' : 'auto',
+                      pageBreakAfter: pageIndex < Math.ceil(generatedTickets.length / 8) - 1 ? 'always' : 'auto',
                       minHeight: '100vh',
                       boxSizing: 'border-box'
                     }}
                   >
-                    <div className="grid grid-cols-3 md:grid-cols-3 gap-6 print:grid-cols-3" style={{ gridTemplateRows: 'repeat(6, 176px)' }}>
-                      {generatedTickets.slice(pageIndex * 15, (pageIndex + 1) * 15).map((ticketId, index) => (
+                    <div className="grid grid-cols-2 md:grid-cols-2 gap-6 print:grid-cols-2" style={{ gridTemplateRows: 'repeat(4, 236.2px)' }}>
+                      {generatedTickets.slice(pageIndex * 8, (pageIndex + 1) * 8).map((ticketId, index) => (
                         <motion.div
                           key={ticketId}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: index * 0.1 }}
                           className="print:break-inside-avoid"
-                          style={{ height: '176px' }}
+                          style={{ height: '236.2px' }}
                         >
                           {/* Custom Ticket Design */}
-                          <div className="relative max-w-xs mx-auto flex h-[176px] w-[269px]" >
+                          <div className="relative flex h-[236.2px] w-[363.2px]" >
                             {/* Barcode on the left side */}
-                            <div className="absolute left-0 top-0 z-10" style={{ width: '60px', height: '250px', transform: 'scale(.19) translateX(-44px) translateY(-117px)' }}>
+                            <div className="absolute left-0 top-0 z-10" style={{ width: '90px', height: '290px', transform: 'scale(.19) translateX(-74px) translateY(-47px)' }}>
                               <Barcode value={ticketId} />
                             </div>
                             
                             {/* Ticket image */}
-                            <img src={`/${validDay}-ticket.png`} alt={`${validDay} ticket design`} className="w-full object-cover" style={{ width: '269px !important', height: '176px !important', }} />
+                            <img src={`/${validDay}-ticket.png`} alt={`${validDay} ticket design`} className="w-full object-cover" style={{ width: '363.2px !important', height: '236.2px !important', }} />
                           </div>
                         </motion.div>
                       ))}

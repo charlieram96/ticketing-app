@@ -14,17 +14,17 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
-    padding: 20,
+    padding: 10,
   },
   ticketGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   ticketContainer: {
-    width: '30%',
-    height: 120,
+    width: 224.83,
+    height: 190,
     marginBottom: 10,
     position: 'relative',
   },
@@ -38,10 +38,10 @@ const styles = StyleSheet.create({
   },
   barcode: {
     position: 'absolute',
-    top: 52.5,
-    left: -38.5,
-    width: 100,
-    height: 15,
+    top: 85.5,
+    left: -52,
+    width: 135,
+    height: 19,
     transform: 'rotate(90deg)',
   },
 })
