@@ -334,7 +334,7 @@ export default function GeneratePage() {
                           {/* Custom Ticket Design */}
                           <div className="relative flex h-[236.2px] w-[363.2px]" >
                             {/* Barcode on the left side */}
-                            <div className="absolute left-0 top-0 z-10" style={{ width: '90px', height: '290px', transform: 'scale(.19) translateX(-74px) translateY(-47px)' }}>
+                            <div className="absolute left-0 top-0 z-10" style={{ width: '90px', height: '290px', transform: 'scale(.19) translateX(-50px) translateY(-47px)' }}>
                               <Barcode value={ticketId} />
                             </div>
                             

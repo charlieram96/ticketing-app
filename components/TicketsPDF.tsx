@@ -14,18 +14,18 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
-    padding: 10,
+    paddingTop: 20,
   },
   ticketGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   ticketContainer: {
-    width: 224.83,
-    height: 190,
-    marginBottom: 10,
+    width: 236.3,
+    height: 157.65,
+    marginBottom: 0,
     position: 'relative',
   },
   ticketImage: {
@@ -38,8 +38,8 @@ const styles = StyleSheet.create({
   },
   barcode: {
     position: 'absolute',
-    top: 85.5,
-    left: -52,
+    top: 69,
+    left: -46,
     width: 135,
     height: 19,
     transform: 'rotate(90deg)',
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
 })
 
 const TicketsPDFDocument = ({ tickets, validDay, barcodes }: TicketsPDFProps) => {
-  const ticketsPerPage = 18
+  const ticketsPerPage = 10
   const pages = Math.ceil(tickets.length / ticketsPerPage)
 
   return (
