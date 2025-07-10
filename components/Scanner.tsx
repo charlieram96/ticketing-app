@@ -694,7 +694,7 @@ function ScannerInterface({
                     <Button 
                       onClick={() => {
                         onClearError()
-                        setShowManualEntry(true)
+                        onManualEntry()
                       }}
                       size="sm"
                       variant="default"
