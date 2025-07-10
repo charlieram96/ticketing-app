@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { QrCode, Ticket, LogOut, Plus, Scan } from 'lucide-react'
+import { QrCode, Ticket, LogOut, Plus, Scan, BadgeCheck } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
@@ -46,7 +46,13 @@ export default function Home() {
               <Link href="/tickets">
                 <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4">
                   <Ticket className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Manage Tickets</span>
+                  <span className="hidden sm:inline">Tickets</span>
+                </Button>
+              </Link>
+              <Link href="/badges">
+                <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4">
+                  <BadgeCheck className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Badges</span>
                 </Button>
               </Link>
               <Link href="/generate">

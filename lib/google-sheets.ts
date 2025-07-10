@@ -13,6 +13,15 @@ interface TicketData {
   }[]
 }
 
+interface BadgeData {
+  badgeId: string
+  name: string
+  department: string
+  checkInHistory: {
+    timestamp: string
+  }[]
+}
+
 export class GoogleSheetsService {
   private sheets: any
   private spreadsheetId: string
@@ -224,5 +233,71 @@ export class GoogleSheetsService {
       validDay: (row[6] || 'day1') as 'day1' | 'day2' | 'day3',
       history: JSON.parse(row[5] || '[]'),
     }))
+  }
+
+  async getAllBadges(): Promise<BadgeData[]> {
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: 'Badges!A:D',
+    })
+
+    const rows = response.data.values || []
+    if (rows.length <= 1) return []
+    
+    return rows.slice(1).map((row: any[]) => ({
+      badgeId: row[0] || '',
+      name: row[1] || '',
+      department: row[2] || '',
+      checkInHistory: JSON.parse(row[3] || '[]'),
+    }))
+  }
+
+  async getBadge(badgeId: string): Promise<BadgeData | null> {
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: 'Badges!A:D',
+    })
+
+    const rows = response.data.values || []
+    const badgeRow = rows.find((row: any[]) => row[0] === badgeId)
+
+    if (!badgeRow) return null
+
+    return {
+      badgeId: badgeRow[0],
+      name: badgeRow[1] || '',
+      department: badgeRow[2] || '',
+      checkInHistory: JSON.parse(badgeRow[3] || '[]'),
+    }
+  }
+
+  async updateBadgeCheckIn(badgeId: string): Promise<BadgeData | null> {
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: 'Badges!A:D',
+    })
+
+    const rows = response.data.values || []
+    const rowIndex = rows.findIndex((row: any[]) => row[0] === badgeId)
+
+    if (rowIndex === -1) return null
+
+    const badgeRow = rows[rowIndex]
+    const timestamp = new Date().toISOString()
+    const checkInHistory = JSON.parse(badgeRow[3] || '[]')
+    checkInHistory.push({ timestamp })
+
+    badgeRow[3] = JSON.stringify(checkInHistory)
+
+    await this.sheets.spreadsheets.values.update({
+      spreadsheetId: this.spreadsheetId,
+      range: `Badges!A${rowIndex + 1}:D${rowIndex + 1}`,
+      valueInputOption: 'RAW',
+      resource: {
+        values: [badgeRow],
+      },
+    })
+
+    return this.getBadge(badgeId)
   }
 }

@@ -3,14 +3,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode'
 import { motion } from 'framer-motion'
-import { QrCode, Barcode, CheckCircle, Eye, RotateCcw, Loader2, Play, Square, SwitchCamera } from 'lucide-react'
+import { Barcode, CheckCircle, Eye, RotateCcw, Loader2, Play, Square, SwitchCamera, BadgeCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-type ScanMode = 'check-in' | 'view' | 'reset'
-type ScanType = 'qr' | 'barcode'
+type ScanMode = 'check-in' | 'view' | 'reset' | 'badge'
 
 interface ScanResult {
   ticketId: string
@@ -18,6 +17,7 @@ interface ScanResult {
   message: string
   success: boolean
   details?: any
+  isBadge?: boolean
 }
 
 interface ScannerProps {
@@ -26,7 +26,6 @@ interface ScannerProps {
 
 export default function Scanner({ onScanResult }: ScannerProps) {
   const [mode, setMode] = useState<ScanMode>('check-in')
-  const [scanType, setScanType] = useState<ScanType>('qr')
   const [isScanning, setIsScanning] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [scannerError, setScannerError] = useState<string | null>(null)
@@ -54,7 +53,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
       
       const config = {
         fps: 10,
-        qrbox: scanType === 'qr' ? { width: 280, height: 280 } : { width: 320, height: 160 },
+        qrbox: { width: 320, height: 160 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
         aspectRatio: 1.0,
         showTorchButtonIfSupported: false,
@@ -78,21 +77,38 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         
         scannerRef.current.render(
           async (decodedText) => {
-            console.log('QR Code detected:', decodedText)
+            console.log('Barcode detected:', decodedText)
             if (!isProcessingRef.current) {
               await handleScan(decodedText)
             }
           },
           (error) => {
             // Only log meaningful errors, not continuous scan failures
-            if (!error.includes('NotFoundException') && !error.includes('No MultiFormat Readers')) {
+            if (!error.includes('NotFoundException') && 
+                !error.includes('No MultiFormat Readers') && 
+                !error.includes('No barcode or QR code detected') &&
+                !error.includes('QR code parse error')) {
               console.error('Scanner error:', error)
             }
           }
         )
       } catch (error) {
         console.error('Failed to initialize scanner:', error)
-        setScannerError(`Failed to start camera: ${error}`)
+        let errorMessage = 'Failed to start camera'
+        
+        if (error && typeof error === 'object' && 'name' in error) {
+          if (error.name === 'NotAllowedError') {
+            errorMessage = 'Camera permission denied. Please allow camera access in your browser settings.'
+          } else if (error.name === 'NotFoundError') {
+            errorMessage = 'No camera found on this device.'
+          } else if (error.name === 'NotSupportedError') {
+            errorMessage = 'Camera not supported on this device/browser.'
+          } else if (error.name === 'NotReadableError') {
+            errorMessage = 'Camera is already in use by another application.'
+          }
+        }
+        
+        setScannerError(errorMessage)
         setIsScanning(false)
       }
     }
@@ -108,9 +124,9 @@ export default function Scanner({ onScanResult }: ScannerProps) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isScanning, scanType, mode, facingMode])
+  }, [isScanning, mode, facingMode])
 
-  const handleScan = async (ticketId: string) => {
+  const handleScan = async (scannedId: string) => {
     // Prevent multiple simultaneous scans
     if (isProcessingRef.current) {
       console.log('Already processing a scan, ignoring...')
@@ -131,70 +147,126 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     setIsProcessing(true)
     
     try {
-      const action = mode === 'check-in' ? 'redeem' : mode === 'reset' ? 'reset' : 'view'
-      
-      const requestBody: any = { action }
-      if (action === 'redeem') {
-        requestBody.selectedDay = selectedDay
-      }
-      
-      const response = await fetch(`/api/tickets/${ticketId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        const result: ScanResult = {
-          ticketId,
-          status: data.status,
-          success: true,
-          message: mode === 'check-in' 
-            ? 'Ticket successfully checked in!'
-            : mode === 'reset' 
-            ? 'Ticket successfully reset!'
-            : 'Ticket details retrieved',
-          details: data,
-        }
-        onScanResult(result)
-        
-        // For successful operations, wait longer before resuming
-        setTimeout(() => {
-          if (scannerRef.current) {
-            try {
-              scannerRef.current.resume()
-            } catch (error) {
-              console.log('Scanner resume error:', error)
-            }
-          }
-        }, mode === 'check-in' || mode === 'reset' ? 4000 : 3000)
-      } else {
-        onScanResult({
-          ticketId,
-          status: 'unredeemed',
-          success: false,
-          message: data.error || 'Failed to process ticket',
+      if (mode === 'badge') {
+        // Handle badge scanning
+        const action = 'check-in'
+        const response = await fetch(`/api/badges/${scannedId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action }),
         })
-        
-        // For errors, resume after a shorter delay
-        setTimeout(() => {
-          if (scannerRef.current) {
-            try {
-              scannerRef.current.resume()
-            } catch (error) {
-              console.log('Scanner resume error:', error)
-            }
+
+        const data = await response.json()
+
+        if (response.ok) {
+          const result: ScanResult = {
+            ticketId: scannedId,
+            status: 'unredeemed', // badges don't have status
+            success: true,
+            message: 'Badge successfully checked in!',
+            details: data,
+            isBadge: true,
           }
-        }, 2000)
+          onScanResult(result)
+          
+          // For successful operations, wait longer before resuming
+          setTimeout(() => {
+            if (scannerRef.current) {
+              try {
+                scannerRef.current.resume()
+              } catch (error) {
+                console.log('Scanner resume error:', error)
+              }
+            }
+          }, 3000)
+        } else {
+          onScanResult({
+            ticketId: scannedId,
+            status: 'unredeemed',
+            success: false,
+            message: data.error || 'Failed to process badge',
+            isBadge: true,
+          })
+          
+          // For errors, resume after a shorter delay
+          setTimeout(() => {
+            if (scannerRef.current) {
+              try {
+                scannerRef.current.resume()
+              } catch (error) {
+                console.log('Scanner resume error:', error)
+              }
+            }
+          }, 2000)
+        }
+      } else {
+        // Handle ticket scanning
+        const action = mode === 'check-in' ? 'redeem' : mode === 'reset' ? 'reset' : 'view'
+        
+        const requestBody: any = { action }
+        if (action === 'redeem') {
+          requestBody.selectedDay = selectedDay
+        }
+        
+        const response = await fetch(`/api/tickets/${scannedId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          const result: ScanResult = {
+            ticketId: scannedId,
+            status: data.status,
+            success: true,
+            message: mode === 'check-in' 
+              ? 'Ticket successfully checked in!'
+              : mode === 'reset' 
+              ? 'Ticket successfully reset!'
+              : 'Ticket details retrieved',
+            details: data,
+          }
+          onScanResult(result)
+          
+          // For successful operations, wait longer before resuming
+          setTimeout(() => {
+            if (scannerRef.current) {
+              try {
+                scannerRef.current.resume()
+              } catch (error) {
+                console.log('Scanner resume error:', error)
+              }
+            }
+          }, mode === 'check-in' || mode === 'reset' ? 4000 : 3000)
+        } else {
+          onScanResult({
+            ticketId: scannedId,
+            status: 'unredeemed',
+            success: false,
+            message: data.error || 'Failed to process ticket',
+          })
+          
+          // For errors, resume after a shorter delay
+          setTimeout(() => {
+            if (scannerRef.current) {
+              try {
+                scannerRef.current.resume()
+              } catch (error) {
+                console.log('Scanner resume error:', error)
+              }
+            }
+          }, 2000)
+        }
       }
     } catch (error) {
       onScanResult({
-        ticketId,
+        ticketId: scannedId,
         status: 'unredeemed',
         success: false,
         message: 'Network error. Please try again.',
+        isBadge: mode === 'badge',
       })
       
       // Resume after network errors
@@ -265,6 +337,13 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           bgColor: 'bg-orange-50',
           textColor: 'text-orange-600'
         }
+      case 'badge':
+        return { 
+          icon: BadgeCheck, 
+          color: 'bg-purple-600 hover:bg-purple-700 text-white',
+          bgColor: 'bg-purple-50',
+          textColor: 'text-purple-600'
+        }
     }
   }
 
@@ -272,7 +351,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     <div className="space-y-4 sm:space-y-6">
       {/* Mode Selection */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-        {(['check-in', 'view', 'reset'] as ScanMode[]).map((m) => {
+        {(['check-in', 'view', 'reset', 'badge'] as ScanMode[]).map((m) => {
           const config = getModeConfig(m)
           const IconComponent = config.icon
           const isActive = mode === m
@@ -289,7 +368,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
                 }`}
               >
                 <IconComponent className="h-4 w-4" />
-                <span className="font-medium">{m === 'check-in' ? 'Check-in' : m === 'view' ? 'View' : 'Reset'}</span>
+                <span className="font-medium">{m === 'check-in' ? 'Check-in' : m === 'view' ? 'View' : m === 'reset' ? 'Reset' : 'Badge'}</span>
               </Button>
             </motion.div>
           )
@@ -320,65 +399,23 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         </div>
       )}
 
-      {/* Scan Type Tabs */}
-      <Tabs value={scanType} onValueChange={(value) => setScanType(value as ScanType)} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-white h-12">
-          <TabsTrigger 
-            value="qr" 
-            className="h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 flex items-center justify-center"
-          >
-            <QrCode className="mr-2 h-4 w-4" />
-            QR Code
-          </TabsTrigger>
-          <TabsTrigger 
-            value="barcode" 
-            className="h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 flex items-center justify-center"
-          >
-            <Barcode className="mr-2 h-4 w-4" />
-            Barcode
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="qr" className="mt-4 sm:mt-6">
-          <ScannerInterface 
-            isScanning={isScanning}
-            isProcessing={isProcessing}
-            isSwitchingCamera={isSwitchingCamera}
-            mode={mode}
-            scanType={scanType}
-            facingMode={facingMode}
-            scannerError={scannerError}
-            onStartScan={() => setIsScanning(true)}
-            onStopScan={() => setIsScanning(false)}
-            onSwitchCamera={switchCamera}
-            onClearError={() => {
-              setScannerError(null)
-              setIsScanning(false)
-            }}
-            scannerElementRef={scannerElementRef}
-          />
-        </TabsContent>
-        
-        <TabsContent value="barcode" className="mt-4 sm:mt-6">
-          <ScannerInterface 
-            isScanning={isScanning}
-            isProcessing={isProcessing}
-            isSwitchingCamera={isSwitchingCamera}
-            mode={mode}
-            scanType={scanType}
-            facingMode={facingMode}
-            scannerError={scannerError}
-            onStartScan={() => setIsScanning(true)}
-            onStopScan={() => setIsScanning(false)}
-            onSwitchCamera={switchCamera}
-            onClearError={() => {
-              setScannerError(null)
-              setIsScanning(false)
-            }}
-            scannerElementRef={scannerElementRef}
-          />
-        </TabsContent>
-      </Tabs>
+      {/* Scanner Interface */}
+      <ScannerInterface 
+        isScanning={isScanning}
+        isProcessing={isProcessing}
+        isSwitchingCamera={isSwitchingCamera}
+        mode={mode}
+        facingMode={facingMode}
+        scannerError={scannerError}
+        onStartScan={() => setIsScanning(true)}
+        onStopScan={() => setIsScanning(false)}
+        onSwitchCamera={switchCamera}
+        onClearError={() => {
+          setScannerError(null)
+          setIsScanning(false)
+        }}
+        scannerElementRef={scannerElementRef}
+      />
     </div>
   )
 }
@@ -388,7 +425,6 @@ interface ScannerInterfaceProps {
   isProcessing: boolean
   isSwitchingCamera: boolean
   mode: ScanMode
-  scanType: ScanType
   facingMode: 'user' | 'environment'
   scannerError: string | null
   onStartScan: () => void
@@ -403,7 +439,6 @@ function ScannerInterface({
   isProcessing, 
   isSwitchingCamera,
   mode, 
-  scanType: _scanType, // Prefix with underscore to indicate intentionally unused
   facingMode,
   scannerError,
   onStartScan, 
@@ -415,7 +450,8 @@ function ScannerInterface({
   const config = {
     'check-in': { color: 'bg-green-600 text-white', icon: CheckCircle },
     'view': { color: 'bg-blue-600 text-white', icon: Eye },
-    'reset': { color: 'bg-orange-600 text-white', icon: RotateCcw }
+    'reset': { color: 'bg-orange-600 text-white', icon: RotateCcw },
+    'badge': { color: 'bg-purple-600 text-white', icon: BadgeCheck }
   }[mode]
 
   const IconComponent = config.icon
@@ -435,7 +471,7 @@ function ScannerInterface({
             
             <div className="space-y-2">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                {mode === 'check-in' ? 'Check-in Mode' : mode === 'view' ? 'View Mode' : 'Reset Mode'}
+                {mode === 'check-in' ? 'Check-in Mode' : mode === 'view' ? 'View Mode' : mode === 'reset' ? 'Reset Mode' : 'Badge Mode'}
               </h3>
               <p className="text-sm text-gray-600">
                 Camera: {facingMode === 'user' ? 'Front' : 'Back'} Camera
@@ -481,6 +517,12 @@ function ScannerInterface({
               <div className="bg-white rounded-lg shadow-lg p-4 max-w-sm text-center">
                 <div className="text-red-600 text-sm mb-2">Camera Error</div>
                 <div className="text-gray-700 text-xs mb-3">{scannerError}</div>
+                {scannerError.includes('permission') && (
+                  <div className="text-xs text-gray-600 mb-3 p-2 bg-blue-50 rounded">
+                    <strong>Safari users:</strong> Go to Settings → Safari → Camera and select "Allow". 
+                    For desktop Safari, click the camera icon in the address bar.
+                  </div>
+                )}
                 <Button 
                   onClick={onClearError}
                   size="sm"
@@ -525,7 +567,7 @@ function ScannerInterface({
               
               <div className="text-center flex-1">
                 <div className="text-sm font-medium text-gray-900">
-                  {mode === 'check-in' ? 'Check-in' : mode === 'view' ? 'View' : 'Reset'}
+                  {mode === 'check-in' ? 'Check-in' : mode === 'view' ? 'View' : mode === 'reset' ? 'Reset' : 'Badge'}
                 </div>
                 <div className="text-xs text-gray-500">
                   {facingMode === 'user' ? 'Front Camera' : 'Back Camera'}
