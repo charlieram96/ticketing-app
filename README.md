@@ -69,6 +69,33 @@ npm run dev
 
 Access at [http://localhost:3000](http://localhost:3000)
 
+### 5. HTTPS Setup for Mobile Testing
+Camera access requires HTTPS for mobile devices. For development:
+
+#### Option 1: ngrok (Recommended)
+```bash
+npm install -g ngrok
+npm run dev
+# In another terminal:
+ngrok http 3000
+# Use the https:// URL provided
+```
+
+#### Option 2: Local HTTPS
+```bash
+# Install mkcert
+npm install -g mkcert
+mkcert create-ca
+mkcert create-cert
+
+# Add to package.json:
+"dev:https": "next dev --experimental-https"
+npm run dev:https
+```
+
+#### Option 3: Test on Desktop Safari
+Desktop Safari can be used to test camera permissions without HTTPS requirements.
+
 ## 🎨 UI Components
 
 Built with **shadcn/ui** for a premium experience:
@@ -168,6 +195,21 @@ docker run -p 3000:3000 ticketing-system
 - Offline-ready architecture
 - PWA capabilities
 
+### Safari Mobile Camera Support
+- Enhanced Safari mobile detection
+- iOS Settings guidance for camera permissions
+- Manual barcode entry fallback
+- User gesture confirmation dialogs
+- HTTPS requirement detection
+
+#### For iOS Safari Users:
+If camera access is blocked:
+1. Settings → Safari → Camera → Allow
+2. Settings → Privacy & Security → Camera → Safari → Allow
+3. Close Safari completely and reopen
+4. Alternative: Use Chrome or Firefox mobile browsers
+5. Use Manual Entry option as backup
+
 ## 🎨 Customization
 
 The system is built for easy customization:
@@ -186,11 +228,19 @@ The system is built for easy customization:
 
 ## 🔄 API Endpoints
 
+### Ticket Management
 - `POST /api/tickets` - Generate new tickets
 - `GET /api/tickets` - Fetch all tickets
 - `GET /api/tickets/[id]` - Get ticket details
 - `PATCH /api/tickets/[id]` - Update ticket status
-- `POST /api/auth/login` - Authentication
+
+### Badge Management
+- `GET /api/badges` - Fetch all badges
+- `GET /api/badges/[id]` - Get badge details
+- `PATCH /api/badges/[id]` - Record badge check-in
+
+### Authentication
+- `POST /api/auth/login` - System authentication
 
 ---
 

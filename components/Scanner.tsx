@@ -31,10 +31,19 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   const [scannerError, setScannerError] = useState<string | null>(null)
   const [isSwitchingCamera, setIsSwitchingCamera] = useState(false)
   const [selectedDay, setSelectedDay] = useState<'day1' | 'day2' | 'day3' | 'day4'>('day1')
+  const [showCameraConfirm, setShowCameraConfirm] = useState(false)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [manualBarcodeId, setManualBarcodeId] = useState('')
   // Default to back camera on mobile, front camera on desktop
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
     typeof window !== 'undefined' && window.innerWidth < 768 ? 'environment' : 'user'
   )
+
+  // Browser and security detection
+  const isSafari = typeof window !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+  const isSafariMobile = typeof window !== 'undefined' && /Safari/.test(navigator.userAgent) && /Mobile/.test(navigator.userAgent)
+  const isHTTPS = typeof window !== 'undefined' && window.location.protocol === 'https:'
+  const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const scannerElementRef = useRef<HTMLDivElement>(null)
   const isProcessingRef = useRef(false)
@@ -98,11 +107,23 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         
         if (error && typeof error === 'object' && 'name' in error) {
           if (error.name === 'NotAllowedError') {
-            errorMessage = 'Camera permission denied. Please allow camera access in your browser settings.'
+            if (!isHTTPS && !isLocalhost) {
+              errorMessage = 'Camera requires HTTPS. Please access this site using https:// instead of http://'
+            } else if (isSafariMobile) {
+              errorMessage = 'Camera permission blocked. Check iOS Settings: Settings → Safari → Camera → Allow, and Settings → Privacy & Security → Camera → Safari → Allow'
+            } else if (isSafari) {
+              errorMessage = 'Camera permission denied. Click the camera icon in Safari\'s address bar to allow access.'
+            } else {
+              errorMessage = 'Camera permission denied. Please allow camera access in your browser settings.'
+            }
           } else if (error.name === 'NotFoundError') {
             errorMessage = 'No camera found on this device.'
           } else if (error.name === 'NotSupportedError') {
-            errorMessage = 'Camera not supported on this device/browser.'
+            if (!isHTTPS && !isLocalhost) {
+              errorMessage = 'Camera requires HTTPS. Please access this site using https:// instead of http://'
+            } else {
+              errorMessage = 'Camera not supported on this device/browser.'
+            }
           } else if (error.name === 'NotReadableError') {
             errorMessage = 'Camera is already in use by another application.'
           }
@@ -285,6 +306,34 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     }
   }
 
+  const handleStartScan = () => {
+    // For Safari mobile, show confirmation to ensure user gesture
+    if (isSafariMobile) {
+      setShowCameraConfirm(true)
+    } else {
+      setIsScanning(true)
+    }
+  }
+
+  const confirmCameraAccess = () => {
+    setShowCameraConfirm(false)
+    setIsScanning(true)
+  }
+
+  const handleManualEntry = async () => {
+    if (!manualBarcodeId.trim()) return
+    
+    setShowManualEntry(false)
+    setIsProcessing(true)
+    
+    try {
+      await handleScan(manualBarcodeId.trim())
+    } finally {
+      setManualBarcodeId('')
+      setIsProcessing(false)
+    }
+  }
+
   const switchCamera = async () => {
     console.log('Switching camera from', facingMode, 'to', facingMode === 'user' ? 'environment' : 'user')
     
@@ -407,15 +456,85 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         mode={mode}
         facingMode={facingMode}
         scannerError={scannerError}
-        onStartScan={() => setIsScanning(true)}
+        onStartScan={handleStartScan}
         onStopScan={() => setIsScanning(false)}
         onSwitchCamera={switchCamera}
         onClearError={() => {
           setScannerError(null)
           setIsScanning(false)
         }}
+        onManualEntry={() => setShowManualEntry(true)}
+        isSafariMobile={isSafariMobile}
         scannerElementRef={scannerElementRef}
       />
+
+      {/* Camera Confirmation Dialog for Safari Mobile */}
+      {showCameraConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm text-center">
+            <div className="text-gray-900 text-lg font-semibold mb-3">Camera Access</div>
+            <div className="text-gray-600 text-sm mb-4">
+              Safari will ask for camera permission. Please tap &quot;Allow&quot; when prompted.
+              <br/><br/>
+              If blocked, go to Settings → Safari → Camera → Allow
+            </div>
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => setShowCameraConfirm(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={confirmCameraAccess}
+                className="flex-1 bg-purple-600 hover:bg-purple-700"
+              >
+                Start Camera
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Barcode Entry Dialog */}
+      {showManualEntry && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+            <div className="text-gray-900 text-lg font-semibold mb-3">Manual Entry</div>
+            <div className="text-gray-600 text-sm mb-4">
+              Enter the barcode number manually:
+            </div>
+            <input
+              type="text"
+              value={manualBarcodeId}
+              onChange={(e) => setManualBarcodeId(e.target.value)}
+              placeholder="Enter barcode ID..."
+              className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-center font-mono"
+              onKeyPress={(e) => e.key === 'Enter' && handleManualEntry()}
+            />
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => {
+                  setShowManualEntry(false)
+                  setManualBarcodeId('')
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleManualEntry}
+                disabled={!manualBarcodeId.trim()}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
+              >
+                Submit
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -431,6 +550,8 @@ interface ScannerInterfaceProps {
   onStopScan: () => void
   onSwitchCamera: () => void
   onClearError: () => void
+  onManualEntry: () => void
+  isSafariMobile: boolean
   scannerElementRef: React.RefObject<HTMLDivElement | null>
 }
 
@@ -445,6 +566,8 @@ function ScannerInterface({
   onStopScan, 
   onSwitchCamera,
   onClearError,
+  onManualEntry,
+  isSafariMobile,
   scannerElementRef 
 }: ScannerInterfaceProps) {
   const config = {
@@ -500,6 +623,18 @@ function ScannerInterface({
                 <SwitchCamera className="mr-2 h-5 w-5" />
                 Switch to {facingMode === 'user' ? 'Back' : 'Front'} Camera
               </Button>
+
+              {isSafariMobile && (
+                <Button
+                  onClick={onManualEntry}
+                  variant="outline"
+                  size="lg"
+                  className="w-full min-h-[48px] touch-manipulation border-purple-200 text-purple-600 hover:bg-purple-50"
+                >
+                  <Barcode className="mr-2 h-5 w-5" />
+                  Manual Entry
+                </Button>
+              )}
             </div>
           </motion.div>
         </CardContent>
@@ -514,22 +649,61 @@ function ScannerInterface({
           
           {scannerError && (
             <div className="absolute inset-0 bg-red-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg shadow-lg p-4 max-w-sm text-center">
+              <div className="bg-white rounded-lg shadow-lg p-4 max-w-md text-center">
                 <div className="text-red-600 text-sm mb-2">Camera Error</div>
                 <div className="text-gray-700 text-xs mb-3">{scannerError}</div>
-                {scannerError.includes('permission') && (
-                  <div className="text-xs text-gray-600 mb-3 p-2 bg-blue-50 rounded">
-                    <strong>Safari users:</strong> Go to Settings &rarr; Safari &rarr; Camera and select &quot;Allow&quot;. 
-                    For desktop Safari, click the camera icon in the address bar.
+                
+                {/* HTTPS Warning */}
+                {scannerError.includes('HTTPS') && (
+                  <div className="text-xs text-gray-600 mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                    <strong>Security Required:</strong> Camera access requires a secure connection (HTTPS). 
+                    Contact your system administrator or access the site via HTTPS.
                   </div>
                 )}
-                <Button 
-                  onClick={onClearError}
-                  size="sm"
-                  variant="outline"
-                >
-                  Try Again
-                </Button>
+                
+                {/* Safari Mobile Help */}
+                {scannerError.includes('iOS Settings') && (
+                  <div className="text-xs text-gray-600 mb-3 p-2 bg-blue-50 border border-blue-200 rounded">
+                    <strong>iOS Safari Settings:</strong>
+                    <br/>1. Settings &rarr; Safari &rarr; Camera &rarr; Allow
+                    <br/>2. Settings &rarr; Privacy &amp; Security &rarr; Camera &rarr; Safari &rarr; Allow
+                    <br/>3. Close Safari completely and reopen
+                    <br/><br/>
+                    <strong>Alternative:</strong> Try Chrome or Firefox mobile browsers
+                  </div>
+                )}
+                
+                {/* Safari Desktop Help */}
+                {scannerError.includes('address bar') && (
+                  <div className="text-xs text-gray-600 mb-3 p-2 bg-blue-50 border border-blue-200 rounded">
+                    <strong>Safari Desktop:</strong> Look for the camera icon in the address bar and click &quot;Allow&quot;. 
+                    If no icon appears, go to Safari &rarr; Settings &rarr; Websites &rarr; Camera &rarr; Allow.
+                  </div>
+                )}
+                
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={onClearError}
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Try Again
+                  </Button>
+                  {isSafariMobile && (
+                    <Button 
+                      onClick={() => {
+                        onClearError()
+                        setShowManualEntry(true)
+                      }}
+                      size="sm"
+                      variant="default"
+                      className="flex-1"
+                    >
+                      Manual Entry
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
