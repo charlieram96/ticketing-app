@@ -519,7 +519,7 @@ function ScannerInterface({
                 <div className="text-gray-700 text-xs mb-3">{scannerError}</div>
                 {scannerError.includes('permission') && (
                   <div className="text-xs text-gray-600 mb-3 p-2 bg-blue-50 rounded">
-                    <strong>Safari users:</strong> Go to Settings → Safari → Camera and select "Allow". 
+                    <strong>Safari users:</strong> Go to Settings &rarr; Safari &rarr; Camera and select &quot;Allow&quot;. 
                     For desktop Safari, click the camera icon in the address bar.
                   </div>
                 )}
