@@ -19,7 +19,7 @@ interface ScanResultProps {
       createdAt?: string
       redeemedAt?: string
       resetAt?: string
-      validDay?: 'day1' | 'day2' | 'day3'
+      validDay?: 'day1' | 'day2' | 'day3' | 'day4'
       history?: { action: string; timestamp: string }[]
       // Badge details
       badgeId?: string
@@ -129,7 +129,7 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
                           : 'bg-orange-600/20 text-orange-400 border-orange-600/30'
                       }
                     >
-                      {result.details.validDay === 'day1' ? 'Day 1' : result.details.validDay === 'day2' ? 'Day 2' : 'Day 3'}
+                      {result.details.validDay === 'day1' ? 'Day 1' : result.details.validDay === 'day2' ? 'Day 2' : result.details.validDay === 'day3' ? 'Day 3' : 'Day 4'}
                     </Badge>
                   </div>
                 )}

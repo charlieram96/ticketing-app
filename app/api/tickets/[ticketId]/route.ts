@@ -45,7 +45,7 @@ export async function PATCH(
     
     // For redeem action, validate the day
     if (action === 'redeem') {
-      if (!selectedDay || !['day1', 'day2', 'day3'].includes(selectedDay)) {
+      if (!selectedDay || !['day1', 'day2', 'day3', 'day4'].includes(selectedDay)) {
         return NextResponse.json(
           { error: 'Selected day is required for check-in' },
           { status: 400 }
