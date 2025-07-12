@@ -99,7 +99,7 @@ export default function Home() {
                 Scan Tickets
               </h2>
               <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto px-4">
-                Select a scanning mode and start processing QR codes or barcodes with real-time feedback and instant results
+                Select a scanning mode and start processing barcodes with real-time feedback and instant results
               </p>
             </motion.div>
           </div>

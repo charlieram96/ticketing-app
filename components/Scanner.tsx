@@ -443,7 +443,15 @@ export default function Scanner({ onScanResult }: ScannerProps) {
             {(['day1', 'day2', 'day3', 'day4'] as const).map((day) => (
               <motion.div key={day} whileTap={{ scale: 0.98 }}>
                 <Button
-                  onClick={() => setSelectedDay(day)}
+                  onClick={() => {
+                    setSelectedDay(day)
+                    // Stop camera when switching days
+                    if (isScanning) {
+                      setIsScanning(false)
+                    }
+                    // Clear any previous scan result
+                    onScanResult(null)
+                  }}
                   variant={selectedDay === day ? "default" : "outline"}
                   className={`h-10 w-full ${
                     selectedDay === day 

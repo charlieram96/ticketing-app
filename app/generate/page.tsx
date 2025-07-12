@@ -49,22 +49,20 @@ export default function GeneratePage() {
   }
 
   const Barcode = ({ value }: { value: string }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null)
+    const svgRef = useRef<SVGSVGElement>(null)
     const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-      if (canvasRef.current && containerRef.current) {
-        // Generate barcode horizontally first
-        JsBarcode(canvasRef.current, value, {
+      if (svgRef.current && containerRef.current) {
+        // Generate barcode horizontally first using SVG
+        JsBarcode(svgRef.current, value, {
           format: 'CODE128',
-          width: 6.7,
-          height: 170, // This will become the width after rotation
-          displayValue: false,
+          width: 3,
+          height: 80, // This will become the width after rotation
+          displayValue: false, // No text from jsbarcode
           background: '#ffffff',
           lineColor: '#000000',
           margin: 0,
-          fontSize: 14,
-          textMargin: 0,
           flat: false
         })
         
@@ -73,13 +71,34 @@ export default function GeneratePage() {
 
     return (
       <div ref={containerRef} style={{ 
-        width: '30px', // This becomes height after rotation
+        width: '230px', // This becomes height after rotation
         height: '100px', // This becomes width after rotation
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        position: 'relative',
+        transform: 'rotate(90deg)',
+        transformOrigin: 'center center'
       }}>
-        <canvas ref={canvasRef} style={{ transform: 'rotate(90deg)', transformOrigin: 'center center' }}/>
+        <svg ref={svgRef} style={{ transform: 'rotate(90deg)', transformOrigin: 'center center' }}/>
+        {/* Custom text overlay positioned in bottom right of barcode */}
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '29px',
+            right: '-3px',
+            backgroundColor: 'white',
+            padding: '1px 4px 0px 2.5px',
+            fontSize: '8px',
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+            color: 'black',
+            zIndex: 10,
+            transformOrigin: 'center center'
+          }}
+        >
+          {value}
+        </div>
       </div>
     )
   }
@@ -334,7 +353,7 @@ export default function GeneratePage() {
                           {/* Custom Ticket Design */}
                           <div className="relative flex h-[236.2px] w-[363.2px]" >
                             {/* Barcode on the left side */}
-                            <div className="absolute left-0 top-0 z-10" style={{ width: '90px', height: '290px', transform: 'scale(.19) translateX(-50px) translateY(-47px)' }}>
+                            <div className="absolute left-0 top-0 z-10" style={{ width: '90px', height: '290px', transform: 'scale(.92) translateX(-87px) translateY(65px)' }}>
                               <Barcode value={ticketId} />
                             </div>
                             

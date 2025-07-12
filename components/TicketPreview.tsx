@@ -38,22 +38,20 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
   }
 
   const Barcode = ({ value }: { value: string }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null)
+    const svgRef = useRef<SVGSVGElement>(null)
     const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-      if (canvasRef.current && containerRef.current) {
-        // Generate barcode horizontally first
-        JsBarcode(canvasRef.current, value, {
+      if (svgRef.current && containerRef.current) {
+        // Generate barcode without text first
+        JsBarcode(svgRef.current, value, {
           format: 'CODE128',
-          width: 2.2,
-          height: 40, // This will become the width after rotation
-          displayValue: true,
+          width: 3,
+          height: 80,
+          displayValue: false, // No text from jsbarcode
           background: '#ffffff',
           lineColor: '#000000',
           margin: 0,
-          fontSize: 14,
-          textMargin: 0,
           flat: false
         })
         
@@ -65,13 +63,32 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
 
     return (
       <div ref={containerRef} style={{ 
-        width: '70px', // This becomes height after rotation
-        height: '500px', // This becomes width after rotation
+        width: '230px', // This becomes height after rotation
+        height: '100px', // This becomes width after rotation
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        position: 'relative'
       }}>
-        <canvas ref={canvasRef} />
+        <svg ref={svgRef} />
+        {/* Custom text overlay positioned in bottom left of barcode */}
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '30px',
+            right: '-2px',
+            backgroundColor: 'white',
+            padding: '0 2px 0 3px',
+            fontSize: '10px',
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+            color: 'black',
+            borderRadius: '1px',
+            zIndex: 10
+          }}
+        >
+          {value}
+        </div>
       </div>
     )
   }
@@ -130,11 +147,11 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
 
           {/* Ticket Preview */}
           <div>
-            <div className="relative" style={{ backgroundColor: '#f6f6f6', padding: '20px', transform: 'rotate(-90deg)'}}>
+            <div className="relative" style={{ backgroundColor: '#f6f6f6', padding: '20px'}}>
               {/* Custom Ticket Design */}
-              <div className="relative flex">
+              <div className="relative flex" style={{ transform: 'rotate(-90deg)'}}>
                 {/* Barcode on the left side */}
-                <div className="absolute left-0 top-[28px] h-full z-10" style={{ width: '40px', transform: 'scale(0.7)' }}>
+                <div className="relative left-[-46px] top-[239px] h-full z-10" style={{ width: '40px' }}>
                   <Barcode value={ticket.id} />
                 </div>
                 
