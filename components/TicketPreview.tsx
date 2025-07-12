@@ -46,9 +46,9 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
         // Generate barcode horizontally first
         JsBarcode(canvasRef.current, value, {
           format: 'CODE128',
-          width: 2,
-          height: 500, // This will become the width after rotation
-          displayValue: false,
+          width: 2.2,
+          height: 40, // This will become the width after rotation
+          displayValue: true,
           background: '#ffffff',
           lineColor: '#000000',
           margin: 0,
@@ -85,7 +85,7 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
         <DialogHeader>
           <DialogTitle className="text-gray-900 flex items-center justify-between text-lg">
             Ticket Preview
-            <div className="flex gap-1 sm:gap-2">
+            <div className="flex gap-1 sm:gap-2 pr-4">
               <Button
                 onClick={handleDownload}
                 size="sm"
@@ -94,15 +94,6 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
               >
                 <Download className="h-4 w-4" />
                 <span className="hidden sm:inline ml-1">Download</span>
-              </Button>
-              <Button
-                onClick={handleGeneratePDF}
-                size="sm"
-                variant="outline"
-                className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4 mr-4"
-              >
-                <FileSpreadsheet className="h-4 w-4" />
-                <span className="hidden sm:inline ml-1">Download PDF</span>
               </Button>
             </div>
           </DialogTitle>
@@ -139,11 +130,11 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
 
           {/* Ticket Preview */}
           <div>
-            <div className="relative" style={{ backgroundColor: '#f6f6f6', padding: '20px'}}>
+            <div className="relative" style={{ backgroundColor: '#f6f6f6', padding: '20px', transform: 'rotate(-90deg)'}}>
               {/* Custom Ticket Design */}
               <div className="relative flex">
                 {/* Barcode on the left side */}
-                <div className="absolute left-0 top-0 h-full z-10" style={{ width: '70px' }}>
+                <div className="absolute left-0 top-[28px] h-full z-10" style={{ width: '40px', transform: 'scale(0.7)' }}>
                   <Barcode value={ticket.id} />
                 </div>
                 

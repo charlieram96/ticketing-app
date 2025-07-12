@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import Scanner from '@/components/Scanner'
 import ScanResult from '@/components/ScanResult'
 import Image from 'next/image'
-import logo from '@/public/todo_nuevo_logo.svg'
+import logo from '@/public/Todo_Nuevo_Wave_FINAL_Color.png'
 
 export default function Home() {
   const [scanResult, setScanResult] = useState<any>(null)
@@ -39,7 +39,7 @@ export default function Home() {
             <div className="flex items-center gap-2 sm:gap-3">
 
               <div>
-                <Image src={logo} alt="Logo" width={150} height={150} />
+                <Image src={logo} alt="Logo" width={120} height={120} />
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-3">

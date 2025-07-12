@@ -327,7 +327,10 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     setIsProcessing(true)
     
     try {
-      await handleScan(manualBarcodeId.trim())
+      // Add the appropriate prefix based on mode
+      const prefix = mode === 'badge' ? 'BGD-' : 'TKT-'
+      const fullId = prefix + manualBarcodeId.trim()
+      await handleScan(fullId)
     } finally {
       setManualBarcodeId('')
       setIsProcessing(false)
@@ -408,7 +411,15 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           return (
             <motion.div key={m} whileTap={{ scale: 0.98 }} className="flex-1">
               <Button
-                onClick={() => setMode(m)}
+                onClick={() => {
+                  setMode(m)
+                  // Stop camera when switching modes
+                  if (isScanning) {
+                    setIsScanning(false)
+                  }
+                  // Clear any previous scan result
+                  onScanResult(null)
+                }}
                 variant={isActive ? "default" : "outline"}
                 className={`h-12 w-full flex items-center justify-center gap-2 ${
                   isActive 
@@ -463,7 +474,10 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           setScannerError(null)
           setIsScanning(false)
         }}
-        onManualEntry={() => setShowManualEntry(true)}
+        onManualEntry={() => {
+          onScanResult(null)
+          setShowManualEntry(true)
+        }}
         isSafariMobile={isSafariMobile}
         scannerElementRef={scannerElementRef}
       />
@@ -503,16 +517,24 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
             <div className="text-gray-900 text-lg font-semibold mb-3">Manual Entry</div>
             <div className="text-gray-600 text-sm mb-4">
-              Enter the barcode number manually:
+              Enter the {mode === 'badge' ? 'badge' : 'ticket'} number manually:
             </div>
-            <input
-              type="text"
-              value={manualBarcodeId}
-              onChange={(e) => setManualBarcodeId(e.target.value)}
-              placeholder="Enter barcode ID..."
-              className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-center font-mono"
-              onKeyPress={(e) => e.key === 'Enter' && handleManualEntry()}
-            />
+            <div className="relative mb-4">
+              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                <div className="px-3 py-3 bg-gray-50 text-gray-500 font-mono border-r border-gray-300">
+                  {mode === 'badge' ? 'BGD-' : 'TKT-'}
+                </div>
+                <input
+                  type="text"
+                  value={manualBarcodeId}
+                  onChange={(e) => setManualBarcodeId(e.target.value)}
+                  placeholder={mode === 'badge' ? '123456' : '1234567890'}
+                  className="flex-1 p-3 font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-inset"
+                  onKeyDown={(e) => e.key === 'Enter' && handleManualEntry()}
+                  autoFocus
+                />
+              </div>
+            </div>
             <div className="flex gap-3">
               <Button 
                 onClick={() => {
@@ -624,17 +646,15 @@ function ScannerInterface({
                 Switch to {facingMode === 'user' ? 'Back' : 'Front'} Camera
               </Button>
 
-              {isSafariMobile && (
-                <Button
-                  onClick={onManualEntry}
-                  variant="outline"
-                  size="lg"
-                  className="w-full min-h-[48px] touch-manipulation border-purple-200 text-purple-600 hover:bg-purple-50"
-                >
-                  <Barcode className="mr-2 h-5 w-5" />
-                  Manual Entry
-                </Button>
-              )}
+              <Button
+                onClick={onManualEntry}
+                variant="outline"
+                size="lg"
+                className="w-full min-h-[48px] touch-manipulation border-purple-200 text-purple-600 hover:bg-purple-50"
+              >
+                <Barcode className="mr-2 h-5 w-5" />
+                Manual Entry
+              </Button>
             </div>
           </motion.div>
         </CardContent>
@@ -690,19 +710,17 @@ function ScannerInterface({
                   >
                     Try Again
                   </Button>
-                  {isSafariMobile && (
-                    <Button 
-                      onClick={() => {
-                        onClearError()
-                        onManualEntry()
-                      }}
-                      size="sm"
-                      variant="default"
-                      className="flex-1"
-                    >
-                      Manual Entry
-                    </Button>
-                  )}
+                  <Button 
+                    onClick={() => {
+                      onClearError()
+                      onManualEntry()
+                    }}
+                    size="sm"
+                    variant="default"
+                    className="flex-1"
+                  >
+                    Manual Entry
+                  </Button>
                 </div>
               </div>
             </div>

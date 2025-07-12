@@ -426,7 +426,7 @@ export default function TicketsPage() {
                             onClick={() => setSelectedTicket(ticket)}
                           >
                             <TableCell className="font-mono text-gray-900 text-sm">
-                              <div className="max-w-[100px] truncate">{ticket.id}</div>
+                              <div className="max-w-[155px]">{ticket.id}</div>
                               <div className="sm:hidden text-xs text-gray-500 mt-1">
                                 {formatDate(ticket.createdAt)}
                               </div>
