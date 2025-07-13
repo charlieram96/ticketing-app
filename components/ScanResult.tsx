@@ -40,7 +40,7 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
 
   return (
     <Dialog open={!!result} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-md bg-gradient-to-br from-slate-900 to-gray-900 border-white/20">
+      <DialogContent className="sm:max-w-md bg-gradient-to-br from-slate-900 to-gray-900 border-white/20 w-full">
         <DialogHeader>
           <DialogTitle className="sr-only">Scan Result</DialogTitle>
         </DialogHeader>
