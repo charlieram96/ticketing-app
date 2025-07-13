@@ -11,7 +11,7 @@ export const generateBarcodeDataURL = (value: string): string => {
   /* ─────────────────────────  SETTINGS  ─────────────────────────────── */
   const MODULE_WIDTH = 4          // px per narrow bar (was 3)
   const BARCODE_HEIGHT = 120      // px (was 80)
-  const PAD = 12                  // outer padding around everything (was 6)
+  const PAD = 0                  // outer padding around everything (was 6)
   const FONT_SIZE = 18            // px (was 12)
   const LABEL_PAD = 0             // white border around text for legibility
   /* ------------------------------------------------------------------- */
@@ -27,7 +27,7 @@ export const generateBarcodeDataURL = (value: string): string => {
   })
 
   const BAR_W = tmp.width
-  const BAR_H = tmp.height - 40
+  const BAR_H = tmp.height
 
   /* 2 ▸ create final canvas large enough for barcode + label */
   const CANVAS_W = BAR_W + PAD * 2
@@ -45,7 +45,11 @@ export const generateBarcodeDataURL = (value: string): string => {
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
 
   /* 3 ▸ draw barcode */
-  ctx.drawImage(tmp, PAD, PAD + 10) // 20px higher
+  // Add white rectangle behind barcode, positioned 10px higher
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(PAD, PAD + 18, BAR_W, BAR_H)
+  
+  ctx.drawImage(tmp, PAD, PAD + 18) // 10px higher
 
   /* 4 ▸ draw human‑readable text */
   ctx.font = `bold ${FONT_SIZE}px Arial, sans-serif`
@@ -54,16 +58,16 @@ export const generateBarcodeDataURL = (value: string): string => {
 
   const text = value
   const textX = CANVAS_W - PAD
-  const textY = BAR_H + PAD * 2 - 25 // 25px higher
+  const textY = BAR_H + PAD * 2 + 2 // 25px higher
   const textW = ctx.measureText(text).width
 
   // white rectangle behind the label for contrast
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(
-    textX - textW - LABEL_PAD,
+    textX - textW - LABEL_PAD - 5,
     textY - LABEL_PAD / 2 - 20, // 20px higher
-    textW + LABEL_PAD * 2,
-    FONT_SIZE + LABEL_PAD + 30,
+    textW + LABEL_PAD * 2 + 10,
+    FONT_SIZE + LABEL_PAD + 20,
   )
   // black text
   ctx.fillStyle = '#000000'

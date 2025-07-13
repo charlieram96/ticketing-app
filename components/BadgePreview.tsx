@@ -81,7 +81,7 @@ export default function BadgePreview({ badge, onClose }: BadgePreviewProps) {
       
       // Set canvas size
       canvas.width = 1250
-      canvas.height = 180
+      canvas.height = 136
       
       // Fill white background
       ctx.fillStyle = 'white'
@@ -165,7 +165,7 @@ export default function BadgePreview({ badge, onClose }: BadgePreviewProps) {
 
   return (
     <Dialog open={!!badge} onOpenChange={() => onClose()}>
-      <DialogContent className="w-[95vw] sm:max-w-lg bg-white max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[max(85vw, 800px)] bg-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-gray-900 flex items-center justify-between text-lg">
             <div className="flex items-center gap-2">

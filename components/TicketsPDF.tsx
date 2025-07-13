@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   barcode: {
     position: 'absolute',
     top: 69,
-    left: -46,
+    left: -43.5,
     width: 135,
     height: 19,
     transform: 'rotate(90deg)',
