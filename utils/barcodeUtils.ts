@@ -13,7 +13,7 @@ export const generateBarcodeDataURL = (value: string): string => {
   const BARCODE_HEIGHT = 120      // px (was 80)
   const PAD = 12                  // outer padding around everything (was 6)
   const FONT_SIZE = 18            // px (was 12)
-  const LABEL_PAD = 6             // white border around text for legibility
+  const LABEL_PAD = 0             // white border around text for legibility
   /* ------------------------------------------------------------------- */
 
   /* 1 ▸ generate bare barcode on temporary canvas */
@@ -27,7 +27,7 @@ export const generateBarcodeDataURL = (value: string): string => {
   })
 
   const BAR_W = tmp.width
-  const BAR_H = tmp.height
+  const BAR_H = tmp.height - 40
 
   /* 2 ▸ create final canvas large enough for barcode + label */
   const CANVAS_W = BAR_W + PAD * 2
@@ -45,7 +45,7 @@ export const generateBarcodeDataURL = (value: string): string => {
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
 
   /* 3 ▸ draw barcode */
-  ctx.drawImage(tmp, PAD, PAD)
+  ctx.drawImage(tmp, PAD, PAD + 10) // 20px higher
 
   /* 4 ▸ draw human‑readable text */
   ctx.font = `bold ${FONT_SIZE}px Arial, sans-serif`
@@ -54,14 +54,14 @@ export const generateBarcodeDataURL = (value: string): string => {
 
   const text = value
   const textX = CANVAS_W - PAD
-  const textY = BAR_H + PAD * 2 - 25
+  const textY = BAR_H + PAD * 2 - 25 // 25px higher
   const textW = ctx.measureText(text).width
 
   // white rectangle behind the label for contrast
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(
     textX - textW - LABEL_PAD,
-    textY - LABEL_PAD / 2 - 20,
+    textY - LABEL_PAD / 2 - 20, // 20px higher
     textW + LABEL_PAD * 2,
     FONT_SIZE + LABEL_PAD + 30,
   )

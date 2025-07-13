@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { X, BadgeCheck, Clock, Calendar } from 'lucide-react'
+import { X, BadgeCheck, Clock, Calendar, Copy } from 'lucide-react'
 import JsBarcode from 'jsbarcode'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,28 +21,130 @@ interface BadgePreviewProps {
 
 export default function BadgePreview({ badge, onClose }: BadgePreviewProps) {
   const Barcode = ({ value }: { value: string }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null)
+    const svgRef = useRef<SVGSVGElement>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-      if (canvasRef.current) {
-        JsBarcode(canvasRef.current, value, {
+      if (svgRef.current && containerRef.current) {
+        // Generate barcode using SVG
+        JsBarcode(svgRef.current, value, {
           format: 'CODE128',
           width: 10,
           height: 140,
-          displayValue: false,
-          fontSize: 2,
+          displayValue: false, // No text from jsbarcode
           background: '#ffffff',
           lineColor: '#000000',
           margin: 10,
-          textMargin: 5,
+          flat: false
         })
       }
     }, [value])
 
-    return <canvas ref={canvasRef} style={{ width: '400px', height: '100px' }} />
+    return (
+      <div ref={containerRef} style={{ 
+        width: '400px',
+        height: '100px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        position: 'relative'
+      }}>
+        <svg ref={svgRef} />
+        {/* Custom text overlay positioned in bottom right of barcode */}
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '21px',
+            right: '0px',
+            backgroundColor: 'white',
+            padding: '0px 2px 2px 5px',
+            fontSize: '12px',
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+            color: 'black',
+            zIndex: 10
+          }}
+        >
+          {value}
+        </div>
+      </div>
+    )
   }
 
   if (!badge) return null
+
+  const copyBarcodeAsImage = async () => {
+    try {
+      // Create a canvas to composite the barcode with text
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')!
+      
+      // Set canvas size
+      canvas.width = 1250
+      canvas.height = 180
+      
+      // Fill white background
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      
+      // Generate barcode on temporary canvas
+      const tempCanvas = document.createElement('canvas')
+      JsBarcode(tempCanvas, badge.badgeId, {
+        format: 'CODE128',
+        width: 10,
+        height: 360,
+        displayValue: false,
+        background: '#ffffff',
+        lineColor: '#000000',
+        margin: 10,
+        flat: false
+      })
+      
+      // Draw barcode onto main canvas
+      ctx.drawImage(tempCanvas, 0, 0)
+      
+      // Add text overlay
+      ctx.fillStyle = 'white'
+      ctx.font = 'bold 36px Arial'
+      const text = badge.badgeId
+      const textMetrics = ctx.measureText(text)
+      const textWidth = textMetrics.width
+      
+      // Position in bottom right
+      const x = canvas.width - textWidth - 5
+      const y = canvas.height
+      
+      // Draw white background for text
+      ctx.fillRect(x - 10, y - 36, textWidth + 20, 36)
+      
+      // Draw black text
+      ctx.fillStyle = 'black'
+      ctx.fillText(text, x, y)
+      
+      // Convert to blob and copy to clipboard
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({ 'image/png': blob })
+            ])
+            // Could add success feedback here
+          } catch (error) {
+            console.error('Failed to copy image:', error)
+            // Fallback: download the image
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `barcode-${badge.badgeId}.png`
+            a.click()
+            URL.revokeObjectURL(url)
+          }
+        }
+      }, 'image/png')
+    } catch (error) {
+      console.error('Failed to generate barcode image:', error)
+    }
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString()
@@ -103,8 +205,19 @@ export default function BadgePreview({ badge, onClose }: BadgePreviewProps) {
 
           {/* Barcode */}
           <Card className="bg-gray-50/50">
-            <CardContent className="p-6 flex justify-start">
-              <Barcode value={badge.badgeId} />
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <Barcode value={badge.badgeId} />
+                <Button
+                  onClick={copyBarcodeAsImage}
+                  variant="outline"
+                  size="sm"
+                  className="ml-4 text-gray-700 hover:bg-gray-100"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Image
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
