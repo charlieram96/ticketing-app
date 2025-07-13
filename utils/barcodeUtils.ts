@@ -58,14 +58,14 @@ export const generateBarcodeDataURL = (value: string): string => {
 
   const text = value
   const textX = CANVAS_W - PAD
-  const textY = BAR_H + PAD * 2 + 2 // 25px higher
+  const textY = BAR_H + PAD * 2 - 1 // 25px higher
   const textW = ctx.measureText(text).width
 
   // white rectangle behind the label for contrast
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(
     textX - textW - LABEL_PAD - 5,
-    textY - LABEL_PAD / 2 - 20, // 20px higher
+    textY - LABEL_PAD / 2 - 18, // 20px higher
     textW + LABEL_PAD * 2 + 10,
     FONT_SIZE + LABEL_PAD + 20,
   )
