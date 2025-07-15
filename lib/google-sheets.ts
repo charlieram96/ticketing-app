@@ -377,15 +377,11 @@ export class GoogleSheetsService {
         throw new Error(`Badge is not valid for day ${day}`)
       }
       
-      // Check if already scanned today
-      const today = new Date().toDateString()
-      const todayScans = checkInHistory.filter((checkIn: any) => {
-        const checkInDate = new Date(checkIn.timestamp).toDateString()
-        return checkInDate === today && checkIn.day === day
-      })
+      // Check if this event day has ever been scanned (regardless of calendar date)
+      const dayScans = checkInHistory.filter((checkIn: any) => checkIn.day === day)
       
-      if (todayScans.length > 0) {
-        throw new Error(`Badge has already been scanned for day ${day} today`)
+      if (dayScans.length > 0) {
+        throw new Error(`Badge has already been scanned for day ${day} and cannot be used again`)
       }
       
       // Add check-in with day
