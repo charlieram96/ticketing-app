@@ -25,7 +25,10 @@ interface ScanResultProps {
       badgeId?: string
       name?: string
       department?: string
-      checkInHistory?: { timestamp: string }[]
+      type?: 'Badge' | 'Multiday Badge'
+      days?: number[]
+      checkInHistory?: { timestamp: string; day?: number }[]
+      scanHistory?: { day: number; timestamps: string[] }[]
     }
   } | null
   onClose: () => void
@@ -195,6 +198,59 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
                     </span>
                   </div>
                 )}
+                
+                {result.isBadge && result.details.type && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Badge Type:</span>
+                    <Badge 
+                      variant="outline"
+                      className={result.details.type === 'Multiday Badge' ? 'bg-orange-600/20 text-orange-400 border-orange-600/30' : 'bg-blue-600/20 text-blue-400 border-blue-600/30'}
+                    >
+                      {result.details.type === 'Multiday Badge' ? 'Multiday' : 'Regular'}
+                    </Badge>
+                  </div>
+                )}
+                
+                {result.isBadge && result.details.days && result.details.days.length > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Valid Days:</span>
+                    <div className="flex gap-1">
+                      {result.details.days.map((day: number) => (
+                        <Badge 
+                          key={day} 
+                          variant="outline" 
+                          className="text-xs bg-blue-600/20 text-blue-400 border-blue-600/30"
+                        >
+                          {day}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {result.isBadge && result.details?.type === 'Multiday Badge' && result.details?.scanHistory && (
+                  <div className="pt-3 border-t border-white/10">
+                    <span className="text-sm text-white/60 mb-2 block">Day Scan Status:</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {result.details?.days?.map((day: number) => {
+                        const dayScans = result.details?.scanHistory?.find((scan: any) => scan.day === day)
+                        const hasScanned = dayScans && dayScans.timestamps.length > 0
+                        
+                        return (
+                          <div key={day} className="flex items-center justify-between text-xs">
+                            <span className="text-white/60">Day {day}:</span>
+                            <Badge 
+                              variant="outline"
+                              className={hasScanned ? 'bg-green-600/20 text-green-400 border-green-600/30' : 'bg-gray-600/20 text-gray-400 border-gray-600/30'}
+                            >
+                              {hasScanned ? `${dayScans.timestamps.length} scans` : 'Not scanned'}
+                            </Badge>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {result.isBadge && result.details.checkInHistory && result.details.checkInHistory.length > 0 && (
                   <div className="pt-3 border-t border-white/10">
@@ -202,7 +258,17 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
                     <div className="space-y-1 max-h-20 overflow-y-auto">
                       {result.details.checkInHistory.slice(-5).reverse().map((entry: any, index: number) => (
                         <div key={index} className="flex items-center justify-between text-xs">
-                          <span className="text-white/50">Check-in</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-white/50">Check-in</span>
+                            {result.details?.type === 'Multiday Badge' && entry.day && (
+                              <Badge 
+                                variant="outline" 
+                                className="text-xs bg-blue-600/20 text-blue-400 border-blue-600/30"
+                              >
+                                Day {entry.day}
+                              </Badge>
+                            )}
+                          </div>
                           <span className="text-white/40 font-mono">
                             {new Date(entry.timestamp).toLocaleString()}
                           </span>

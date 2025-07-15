@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
 
     const sheets = new GoogleSheetsService()
     await sheets.initializeSheet()
+    await sheets.initializeBadgeSheet()
     
     const ticketIds = Array.from({ length: quantity }, () => `TKT-${nanoid(8).toUpperCase()}`)
     await sheets.createTickets(ticketIds, validDay)

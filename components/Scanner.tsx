@@ -168,13 +168,79 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     setIsProcessing(true)
     
     try {
-      if (mode === 'badge') {
+      if (mode === 'badge' || (mode === 'reset' && scannedId.startsWith('BDG-'))) {
         // Handle badge scanning
-        const action = 'check-in'
+        const action = mode === 'reset' ? 'reset' : 'check-in'
+        
+        const requestBody: any = { action, scanMode: mode }
+        if (action === 'check-in') {
+          // For multiday badges, we need to pass the selected day
+          requestBody.selectedDay = parseInt(selectedDay.replace('day', ''))
+        }
+        
         const response = await fetch(`/api/badges/${scannedId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action }),
+          body: JSON.stringify(requestBody),
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          const result: ScanResult = {
+            ticketId: scannedId,
+            status: 'unredeemed', // badges don't have status
+            success: true,
+            message: action === 'reset' 
+              ? 'Badge successfully reset!'
+              : 'Badge successfully checked in!',
+            details: data,
+            isBadge: true,
+          }
+          onScanResult(result)
+          
+          // For successful operations, wait longer before resuming
+          setTimeout(() => {
+            if (scannerRef.current) {
+              try {
+                scannerRef.current.resume()
+              } catch (error) {
+                console.log('Scanner resume error:', error)
+              }
+            }
+          }, 3000)
+        } else {
+          onScanResult({
+            ticketId: scannedId,
+            status: 'unredeemed',
+            success: false,
+            message: data.error || 'Failed to process badge',
+            isBadge: true,
+          })
+          
+          // For errors, resume after a shorter delay
+          setTimeout(() => {
+            if (scannerRef.current) {
+              try {
+                scannerRef.current.resume()
+              } catch (error) {
+                console.log('Scanner resume error:', error)
+              }
+            }
+          }, 2000)
+        }
+      } else if (scannedId.startsWith('BDG-') && mode === 'check-in') {
+        // Handle badge scanning in check-in mode
+        const requestBody: any = { 
+          action: 'check-in', 
+          scanMode: mode,
+          selectedDay: parseInt(selectedDay.replace('day', ''))
+        }
+        
+        const response = await fetch(`/api/badges/${scannedId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
         })
 
         const data = await response.json()
@@ -328,7 +394,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     
     try {
       // Add the appropriate prefix based on mode
-      const prefix = mode === 'badge' ? 'BGD-' : 'TKT-'
+      const prefix = mode === 'badge' ? 'BDG-' : 'TKT-'
       const fullId = prefix + manualBarcodeId.trim()
       await handleScan(fullId)
     } finally {
@@ -530,7 +596,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
             <div className="relative mb-4">
               <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                 <div className="px-3 py-3 bg-gray-50 text-gray-500 font-mono border-r border-gray-300">
-                  {mode === 'badge' ? 'BGD-' : 'TKT-'}
+                  {mode === 'badge' ? 'BDG-' : 'TKT-'}
                 </div>
                 <input
                   type="text"
