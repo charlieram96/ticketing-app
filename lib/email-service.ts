@@ -93,50 +93,17 @@ export class EmailService {
    * Generate a barcode image using Node.js Canvas (server-side)
    */
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
-    // Create a proper barcode SVG using a simple CODE128-like pattern
-    // This creates a more realistic barcode appearance
-    const bars = this.generateBarcodePattern(badgeId)
-    
+    // Create a simple white rectangle with the badge ID text
+    // This acts as a placeholder that can be easily scanned
     const svg = `
       <svg width="400" height="120" xmlns="http://www.w3.org/2000/svg">
-        <rect width="400" height="120" fill="white"/>
-        <!-- Barcode bars -->
-        ${bars}
-        <!-- Badge ID text below barcode -->
-        <text x="200" y="110" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="black">${badgeId}</text>
+        <rect width="400" height="120" fill="white" stroke="black" stroke-width="2"/>
+        <text x="200" y="70" text-anchor="middle" font-family="monospace" font-size="24" font-weight="bold" fill="black">${badgeId}</text>
       </svg>
     `
     
     // Convert SVG to base64
     return Buffer.from(svg).toString('base64')
-  }
-
-  /**
-   * Generate a simple barcode pattern for visual purposes
-   */
-  private generateBarcodePattern(text: string): string {
-    let bars = ''
-    let x = 20
-    const barHeight = 80
-    
-    // Create a pattern based on the text characters
-    for (let i = 0; i < text.length; i++) {
-      const charCode = text.charCodeAt(i)
-      const pattern = charCode % 8 + 1 // Create variation in bar widths
-      
-      for (let j = 0; j < 5; j++) {
-        const barWidth = (pattern >> j) & 1 ? 3 : 1
-        const color = j % 2 === 0 ? 'black' : 'white'
-        
-        if (color === 'black') {
-          bars += `<rect x="${x}" y="20" width="${barWidth}" height="${barHeight}" fill="black"/>`
-        }
-        x += barWidth
-      }
-      x += 2 // Space between character patterns
-    }
-    
-    return bars
   }
 
   /**
