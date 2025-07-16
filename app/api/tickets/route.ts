@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleSheetsService } from '@/lib/google-sheets'
-import { nanoid } from 'nanoid'
 
 export async function GET() {
   try {
@@ -38,7 +37,28 @@ export async function POST(request: NextRequest) {
     await sheets.initializeSheet()
     await sheets.initializeBadgeSheet()
     
-    const ticketIds = Array.from({ length: quantity }, () => `TKT-${nanoid(8).toUpperCase()}`)
+    // Generate unique ticket IDs with 6-digit numbers
+    const ticketIds: string[] = []
+    const existingTickets = await sheets.getAllTickets()
+    const existingIds = new Set(existingTickets.map(t => t.id))
+    
+    for (let i = 0; i < quantity; i++) {
+      let ticketId: string
+      let attempts = 0
+      const maxAttempts = 10
+      
+      do {
+        ticketId = `TKT-${Math.floor(100000 + Math.random() * 900000)}`
+        attempts++
+      } while (existingIds.has(ticketId) && attempts < maxAttempts)
+      
+      if (attempts >= maxAttempts) {
+        throw new Error('Unable to generate unique ticket ID')
+      }
+      
+      ticketIds.push(ticketId)
+      existingIds.add(ticketId) // Prevent duplicates within this batch
+    }
     await sheets.createTickets(ticketIds, validDay)
     
     return NextResponse.json({ tickets: ticketIds })
