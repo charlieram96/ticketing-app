@@ -1,5 +1,20 @@
 import { google } from 'googleapis'
 
+// Utility function to format timestamp in EST
+function formatTimestampEST(timestamp: string): string {
+  const date = new Date(timestamp)
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  }
+  return date.toLocaleString('en-US', options)
+}
+
 export interface TicketData {
   id: string
   status: 'unredeemed' | 'redeemed'
@@ -384,7 +399,9 @@ export class GoogleSheetsService {
       const dayScans = checkInHistory.filter((checkIn: any) => checkIn.day === day)
       
       if (dayScans.length > 0) {
-        throw new Error(`Badge has already been scanned for day ${day} and cannot be used again`)
+        const firstScan = dayScans[0]
+        const formattedTime = formatTimestampEST(firstScan.timestamp)
+        throw new Error(`Badge has already been scanned for day ${day} and cannot be used again. Previously scanned on ${formattedTime} EST.`)
       }
       
       // Add check-in with day

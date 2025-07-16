@@ -75,8 +75,26 @@ export async function PATCH(
       
       // Check if ticket is already redeemed
       if (ticket.status === 'redeemed') {
+        // Format the redemption time in EST
+        const redeemedAt = ticket.redeemedAt ? new Date(ticket.redeemedAt) : null
+        let errorMessage = 'Ticket has already been redeemed'
+        
+        if (redeemedAt) {
+          const options: Intl.DateTimeFormatOptions = {
+            timeZone: 'America/New_York',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          }
+          const formattedTime = redeemedAt.toLocaleString('en-US', options)
+          errorMessage += `. Previously redeemed on ${formattedTime} EST.`
+        }
+        
         return NextResponse.json(
-          { error: 'Ticket has already been redeemed' },
+          { error: errorMessage },
           { status: 400 }
         )
       }
