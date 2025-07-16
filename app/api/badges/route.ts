@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     await sheets.initializeBadgeSheet()
     const badges = await sheets.getAllBadges()
     
-    // Handle filtering by types
+    // Handle filtering by type
     const url = new URL(request.url)
     const filterType = url.searchParams.get('type')
     
