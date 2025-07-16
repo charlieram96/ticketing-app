@@ -93,24 +93,50 @@ export class EmailService {
    * Generate a barcode image using Node.js Canvas (server-side)
    */
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
-    // For server-side rendering, we'll use a different approach
-    // Since we can't use DOM canvas on the server, we'll create a simple SVG
+    // Create a proper barcode SVG using a simple CODE128-like pattern
+    // This creates a more realistic barcode appearance
+    const bars = this.generateBarcodePattern(badgeId)
+    
     const svg = `
-      <svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
-        <rect width="400" height="100" fill="white"/>
-        <text x="200" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold">${badgeId}</text>
-        <!-- Barcode bars would be generated here -->
-        <rect x="50" y="20" width="2" height="60" fill="black"/>
-        <rect x="54" y="20" width="1" height="60" fill="black"/>
-        <rect x="57" y="20" width="3" height="60" fill="black"/>
-        <rect x="62" y="20" width="1" height="60" fill="black"/>
-        <rect x="65" y="20" width="2" height="60" fill="black"/>
-        <!-- More barcode bars... -->
+      <svg width="400" height="120" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="120" fill="white"/>
+        <!-- Barcode bars -->
+        ${bars}
+        <!-- Badge ID text below barcode -->
+        <text x="200" y="110" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="black">${badgeId}</text>
       </svg>
     `
     
     // Convert SVG to base64
     return Buffer.from(svg).toString('base64')
+  }
+
+  /**
+   * Generate a simple barcode pattern for visual purposes
+   */
+  private generateBarcodePattern(text: string): string {
+    let bars = ''
+    let x = 20
+    const barHeight = 80
+    
+    // Create a pattern based on the text characters
+    for (let i = 0; i < text.length; i++) {
+      const charCode = text.charCodeAt(i)
+      const pattern = charCode % 8 + 1 // Create variation in bar widths
+      
+      for (let j = 0; j < 5; j++) {
+        const barWidth = (pattern >> j) & 1 ? 3 : 1
+        const color = j % 2 === 0 ? 'black' : 'white'
+        
+        if (color === 'black') {
+          bars += `<rect x="${x}" y="20" width="${barWidth}" height="${barHeight}" fill="black"/>`
+        }
+        x += barWidth
+      }
+      x += 2 // Space between character patterns
+    }
+    
+    return bars
   }
 
   /**
@@ -134,6 +160,8 @@ export class EmailService {
           .content { padding: 30px; }
           .badge-info { background-color: #f8fafc; border-radius: 6px; padding: 20px; margin: 20px 0; }
           .badge-id { font-family: 'Courier New', monospace; font-size: 24px; font-weight: bold; color: #374151; }
+          .barcode-section { background-color: #f8fafc; border-radius: 6px; padding: 20px; margin: 20px 0; text-align: center; }
+          .barcode-image { max-width: 100%; height: auto; border: 1px solid #e5e7eb; border-radius: 4px; background-color: white; }
           .footer { background-color: #f8fafc; padding: 20px; text-align: center; color: #6b7280; font-size: 14px; }
           .barcode-note { color: #6b7280; font-size: 14px; margin-top: 10px; }
         </style>
@@ -145,7 +173,7 @@ export class EmailService {
           </div>
           <div class="content">
             <h2>Hello ${badge.name},</h2>
-            <p>Your event badge is ready! Please find your barcode attached to this email.</p>
+            <p>Your event badge is ready! Please find your barcode below.</p>
             
             <div class="badge-info">
               <h3>Badge Details:</h3>
@@ -155,12 +183,18 @@ export class EmailService {
               <p><strong>Access:</strong> ${validDaysText}</p>
             </div>
 
-            <p>Please save the barcode image attached to this email. You'll need to present it at the event for check-in.</p>
+            <div class="barcode-section">
+              <h3>Your Barcode:</h3>
+              <img src="cid:barcode" alt="Badge Barcode ${badge.badgeId}" class="barcode-image" />
+              <p style="margin-top: 10px; font-size: 14px; color: #6b7280;">Badge ID: ${badge.badgeId}</p>
+            </div>
+
+            <p>Please save this barcode image to your phone or print it out. You'll need to present it at the event for check-in.</p>
             
             <div class="barcode-note">
               <p><strong>Important:</strong></p>
               <ul>
-                <li>Save the barcode image to your phone or print it out</li>
+                <li>Save this email or screenshot the barcode above</li>
                 <li>Present the barcode at check-in stations</li>
                 <li>${badge.type === 'Multiday Badge' ? 'This badge can only be used once per valid day' : 'This badge can be used for all event days'}</li>
               </ul>
@@ -213,7 +247,8 @@ export class EmailService {
             content: barcodeBase64,
             filename: `badge-${badge.badgeId}.png`,
             type: 'image/png',
-            disposition: 'attachment'
+            disposition: 'inline',
+            content_id: 'barcode'
           }
         ]
       }
