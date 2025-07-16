@@ -32,7 +32,7 @@ export default function Home() {
         <div className="absolute -bottom-32 left-20 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
       </div>
       <div className="relative z-10">
-      {/* Header */}
+      {/* Header  */}
       <header className="bg-white">
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
