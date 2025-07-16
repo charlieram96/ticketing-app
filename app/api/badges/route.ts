@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, department, type, days } = await request.json()
+    const { name, department, email, type, days } = await request.json()
     
     if (!name || !department || !type) {
       return NextResponse.json(
@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
       badgeId,
       name,
       department,
+      email: email || '',
       type,
       days: validDays
     })

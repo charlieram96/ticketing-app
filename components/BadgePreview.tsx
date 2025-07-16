@@ -14,6 +14,7 @@ interface BadgePreviewProps {
     badgeId: string
     name: string
     department: string
+    email: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
     checkInHistory: { timestamp: string; day?: number }[]
@@ -24,6 +25,7 @@ interface BadgePreviewProps {
     badgeId: string
     name: string
     department: string
+    email: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
   }) => void
@@ -369,6 +371,7 @@ export default function BadgePreview({ badge, onClose, onEdit }: BadgePreviewPro
                     badgeId: badge.badgeId,
                     name: badge.name,
                     department: badge.department,
+                    email: badge.email,
                     type: badge.type,
                     days: badge.days
                   })

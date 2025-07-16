@@ -126,7 +126,7 @@ export async function PUT(
 ) {
   try {
     const { badgeId } = await params
-    const { name, department, type, days } = await request.json()
+    const { name, department, email, type, days } = await request.json()
     
     if (!name || !department || !type) {
       return NextResponse.json(
@@ -173,6 +173,7 @@ export async function PUT(
     const updatedBadge = await sheets.updateBadgeDetails(badgeId, {
       name,
       department,
+      email: email || '',
       type,
       days
     })

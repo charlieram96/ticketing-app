@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Search, RefreshCw, Filter, BadgeCheck, Eye, Clock, Users, Plus, Edit } from 'lucide-react'
+import { ArrowLeft, Search, RefreshCw, Filter, BadgeCheck, Eye, Clock, Users, Plus, Edit, Mail, Send, CheckSquare, Square } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +17,7 @@ interface BadgeData {
   badgeId: string
   name: string
   department: string
+  email: string
   type: 'Badge' | 'Multiday Badge'
   days: number[]
   checkInHistory: { timestamp: string; day?: number }[]
@@ -37,6 +38,7 @@ export default function BadgesPage() {
   const [createForm, setCreateForm] = useState({
     name: '',
     department: '',
+    email: '',
     type: 'Badge' as 'Badge' | 'Multiday Badge',
     days: [1, 2, 3, 4] as number[]
   })
@@ -44,9 +46,14 @@ export default function BadgesPage() {
     badgeId: string
     name: string
     department: string
+    email: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
   } | null>(null)
+  const [selectedBadgeIds, setSelectedBadgeIds] = useState<string[]>([])
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [isEmailSending, setIsEmailSending] = useState(false)
+  const [emailResults, setEmailResults] = useState<any>(null)
 
   useEffect(() => {
     fetchBadges()
@@ -122,6 +129,7 @@ export default function BadgesPage() {
         body: JSON.stringify({
           name: editForm.name,
           department: editForm.department,
+          email: editForm.email,
           type: editForm.type,
           days: editForm.days
         }),
@@ -163,6 +171,7 @@ export default function BadgesPage() {
         setCreateForm({
           name: '',
           department: '',
+          email: '',
           type: 'Badge',
           days: [1, 2, 3, 4]
         })
@@ -183,6 +192,52 @@ export default function BadgesPage() {
       console.error('Error creating badge:', error)
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  const handleSelectAll = () => {
+    const badgesWithEmail = filteredBadges.filter(badge => badge.email && badge.email.includes('@'))
+    if (selectedBadgeIds.length === badgesWithEmail.length) {
+      setSelectedBadgeIds([])
+    } else {
+      setSelectedBadgeIds(badgesWithEmail.map(badge => badge.badgeId))
+    }
+  }
+
+  const handleSelectBadge = (badgeId: string) => {
+    setSelectedBadgeIds(prev => 
+      prev.includes(badgeId) 
+        ? prev.filter(id => id !== badgeId)
+        : [...prev, badgeId]
+    )
+  }
+
+  const handleSendEmails = async () => {
+    if (selectedBadgeIds.length === 0) return
+
+    setIsEmailSending(true)
+    try {
+      const response = await fetch('/api/badges/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ badgeIds: selectedBadgeIds }),
+      })
+
+      const data = await response.json()
+      setEmailResults(data)
+      
+      if (response.ok) {
+        // Clear selection after successful send
+        setSelectedBadgeIds([])
+      }
+    } catch (error) {
+      console.error('Error sending emails:', error)
+      setEmailResults({
+        success: false,
+        error: 'Failed to send emails. Please try again.'
+      })
+    } finally {
+      setIsEmailSending(false)
     }
   }
 
@@ -357,6 +412,76 @@ export default function BadgesPage() {
             </CardContent>
           </Card>
 
+          {/* Email Section */}
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle className="text-gray-900 flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Email Badges
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                Select badges to email barcodes to recipients
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={handleSelectAll}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    {selectedBadgeIds.length === filteredBadges.filter(b => b.email && b.email.includes('@')).length ? (
+                      <CheckSquare className="h-4 w-4" />
+                    ) : (
+                      <Square className="h-4 w-4" />
+                    )}
+                    {selectedBadgeIds.length === filteredBadges.filter(b => b.email && b.email.includes('@')).length ? 'Deselect All' : 'Select All'}
+                  </Button>
+                  <span className="text-sm text-gray-600">
+                    {selectedBadgeIds.length} selected • {filteredBadges.filter(b => b.email && b.email.includes('@')).length} have email
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setShowEmailModal(true)}
+                    disabled={selectedBadgeIds.length === 0 || isEmailSending}
+                    variant="default"
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Emails ({selectedBadgeIds.length})
+                  </Button>
+                </div>
+              </div>
+              
+              {selectedBadgeIds.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="text-sm font-medium text-blue-900 mb-2">Selected Badges:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedBadgeIds.map(badgeId => {
+                      const badge = badges.find(b => b.badgeId === badgeId)
+                      return badge ? (
+                        <div key={badgeId} className="flex items-center gap-1 bg-white px-2 py-1 rounded border text-xs">
+                          <span className="font-mono">{badgeId}</span>
+                          <span>({badge.name})</span>
+                          <button
+                            onClick={() => handleSelectBadge(badgeId)}
+                            className="text-red-500 hover:text-red-700 ml-1"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : null
+                    })}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Badges Table */}
           <Card className="bg-white">
             <CardHeader>
@@ -385,9 +510,22 @@ export default function BadgesPage() {
                     <Table>
                       <TableHeader>
                         <TableRow className="hover:bg-gray-50">
+                          <TableHead className="text-gray-700 w-12">
+                            <button
+                              onClick={handleSelectAll}
+                              className="flex items-center justify-center w-4 h-4"
+                            >
+                              {selectedBadgeIds.length === filteredBadges.filter(b => b.email && b.email.includes('@')).length && filteredBadges.filter(b => b.email && b.email.includes('@')).length > 0 ? (
+                                <CheckSquare className="h-4 w-4 text-blue-600" />
+                              ) : (
+                                <Square className="h-4 w-4 text-gray-400" />
+                              )}
+                            </button>
+                          </TableHead>
                           <TableHead className="text-gray-700 min-w-[120px]">Badge ID</TableHead>
                           <TableHead className="text-gray-700">Name</TableHead>
                           <TableHead className="text-gray-700">Department</TableHead>
+                          <TableHead className="text-gray-700 hidden sm:table-cell">Email</TableHead>
                           <TableHead className="text-gray-700">Type</TableHead>
                           <TableHead className="text-gray-700 hidden sm:table-cell">Valid Days</TableHead>
                           <TableHead className="text-gray-700 text-center">Check-ins</TableHead>
@@ -406,6 +544,24 @@ export default function BadgesPage() {
                             className="hover:bg-gray-50 cursor-pointer transition-all duration-200"
                             onClick={() => setSelectedBadge(badge)}
                           >
+                            <TableCell className="text-center">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (badge.email && badge.email.includes('@')) {
+                                    handleSelectBadge(badge.badgeId)
+                                  }
+                                }}
+                                disabled={!badge.email || !badge.email.includes('@')}
+                                className="flex items-center justify-center w-4 h-4"
+                              >
+                                {selectedBadgeIds.includes(badge.badgeId) ? (
+                                  <CheckSquare className="h-4 w-4 text-blue-600" />
+                                ) : (
+                                  <Square className={`h-4 w-4 ${badge.email && badge.email.includes('@') ? 'text-gray-400 hover:text-blue-400' : 'text-gray-200'}`} />
+                                )}
+                              </button>
+                            </TableCell>
                             <TableCell className="font-mono text-gray-900 text-sm">
                               <div className="max-w-[100px] truncate">{badge.badgeId}</div>
                             </TableCell>
@@ -416,6 +572,15 @@ export default function BadgesPage() {
                               <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
                                 {badge.department}
                               </Badge>
+                            </TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              <div className="max-w-[150px] truncate text-sm text-gray-600">
+                                {badge.email ? (
+                                  <span className="text-blue-600">{badge.email}</span>
+                                ) : (
+                                  <span className="text-gray-400 italic">No email</span>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <Badge 
@@ -457,6 +622,7 @@ export default function BadgesPage() {
                                       badgeId: badge.badgeId,
                                       name: badge.name,
                                       department: badge.department,
+                                      email: badge.email,
                                       type: badge.type,
                                       days: badge.days
                                     })
@@ -522,6 +688,20 @@ export default function BadgesPage() {
                 value={createForm.department}
                 onChange={(e) => setCreateForm({ ...createForm, department: e.target.value })}
                 placeholder="Enter department"
+                className="bg-white text-gray-900"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={createForm.email}
+                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                placeholder="Enter email address"
                 className="bg-white text-gray-900"
               />
             </div>
@@ -623,6 +803,7 @@ export default function BadgesPage() {
                   setCreateForm({
                     name: '',
                     department: '',
+                    email: '',
                     type: 'Badge',
                     days: [1, 2, 3, 4]
                   })
@@ -673,6 +854,20 @@ export default function BadgesPage() {
                   value={editForm.department}
                   onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
                   placeholder="Enter department"
+                  className="bg-white text-gray-900"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-email" className="text-sm font-medium text-gray-700">
+                  Email Address
+                </Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  placeholder="Enter email address"
                   className="bg-white text-gray-900"
                 />
               </div>
@@ -795,6 +990,95 @@ export default function BadgesPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Confirmation Modal */}
+      <Dialog open={showEmailModal} onOpenChange={() => setShowEmailModal(false)}>
+        <DialogContent className="sm:max-w-lg bg-white max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <Mail className="h-5 w-5 text-blue-600" />
+              Send Badge Emails
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              You are about to send badge barcode emails to {selectedBadgeIds.length} recipients.
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto">
+              <div className="text-sm font-medium text-gray-700 mb-2">Recipients:</div>
+              <div className="space-y-2">
+                {selectedBadgeIds.map(badgeId => {
+                  const badge = badges.find(b => b.badgeId === badgeId)
+                  return badge ? (
+                    <div key={badgeId} className="flex items-center justify-between text-xs bg-white px-2 py-1 rounded">
+                      <span className="font-mono">{badgeId}</span>
+                      <span>{badge.name}</span>
+                      <span className="text-blue-600">{badge.email}</span>
+                    </div>
+                  ) : null
+                })}
+              </div>
+            </div>
+
+            {emailResults && (
+              <div className={`p-4 rounded-lg ${emailResults.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                {emailResults.success ? (
+                  <div>
+                    <div className="text-green-800 font-medium mb-2">✅ Email Results</div>
+                    <div className="text-sm text-green-700 space-y-1">
+                      <div>✅ Sent: {emailResults.summary?.sent || 0}</div>
+                      {emailResults.summary?.failed > 0 && <div>❌ Failed: {emailResults.summary.failed}</div>}
+                      {emailResults.summary?.noEmail > 0 && <div>⚠️ No email: {emailResults.summary.noEmail}</div>}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-red-800 font-medium mb-2">❌ Error</div>
+                    <div className="text-sm text-red-700">{emailResults.error}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={handleSendEmails}
+                disabled={isEmailSending || selectedBadgeIds.length === 0}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                {isEmailSending ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="mr-2 h-4 w-4 rounded-full border-2 border-blue-300 border-t-white"
+                    />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send {selectedBadgeIds.length} Emails
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowEmailModal(false)
+                  setEmailResults(null)
+                }}
+                variant="outline"
+                className="flex-1"
+                disabled={isEmailSending}
+              >
+                {emailResults ? 'Close' : 'Cancel'}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
       </div>
