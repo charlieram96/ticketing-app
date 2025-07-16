@@ -40,7 +40,7 @@ export const generateBarcodeDataURL = (value: string): string => {
   const ctx = canvas.getContext('2d')!
   ctx.imageSmoothingEnabled = false // keep edges sharp
 
-  // white background ensures consistent rendering in PDFs
+  // white background ensures consistent rendering in PDF
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
 
