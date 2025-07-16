@@ -201,6 +201,7 @@ export class EmailService {
       
       const msg = {
         to: badge.email,
+        cc: 'flscticket@gmail.com',
         from: {
           email: this.fromEmail,
           name: this.fromName
