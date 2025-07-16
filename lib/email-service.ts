@@ -35,8 +35,8 @@ export class EmailService {
   private fromName: string
 
   constructor() {
-    this.fromEmail = process.env.FROM_EMAIL || 'tickets@example.com'
-    this.fromName  = process.env.FROM_NAME  || 'Event Tickets'
+    this.fromEmail = process.env.FROM_EMAIL || 'flscticket@gmail.com'
+    this.fromName  = process.env.FROM_NAME  || 'Todo Nuevo Tickets'
   }
 
   /*─────────────────────────────────────────────────────────
@@ -67,24 +67,6 @@ export class EmailService {
       
       // Draw barcode onto main canvas
       ctx.drawImage(tempCanvas, 0, 0)
-      
-      // Add text overlay (same as BadgePreview)
-      ctx.fillStyle = 'white'
-      ctx.font = 'bold 36px Arial'
-      const text = badgeId
-      const textMetrics = ctx.measureText(text)
-      const textWidth = textMetrics.width
-      
-      // Position in bottom right
-      const x = canvas.width - textWidth - 5
-      const y = canvas.height
-      
-      // Draw white background for text
-      ctx.fillRect(x - 10, y - 36, textWidth + 20, 36)
-      
-      // Draw black text
-      ctx.fillStyle = 'black'
-      ctx.fillText(text, x, y)
       
       // Convert canvas to PNG base64 (without data URI prefix)
       const buffer = canvas.toBuffer('image/png')
@@ -138,63 +120,302 @@ export class EmailService {
       ? `Valid for days: ${badge.days.join(', ')}`
       : 'Valid for all event days'
 
-    return `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="utf-8" />
-<title>Your Event Badge</title>
-<style>
-  body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f5f5f5}
-  .container{max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;
-             box-shadow:0 2px 10px rgba(0,0,0,.1)}
-  .header{background:#6366f1;color:#fff;padding:30px;text-align:center}
-  .content{padding:30px}
-  .badge-info{background:#f8fafc;border-radius:6px;padding:20px;margin:20px 0}
-  .badge-id{font-family:Courier New,monospace;font-size:24px;font-weight:bold;color:#374151}
-  .barcode-section{text-align:center;background:#f8fafc;border-radius:6px;padding:20px;margin:20px 0}
-  .barcode-image{max-width:100%;height:auto;border:1px solid #e5e7eb;border-radius:4px;background:#fff}
-  .footer{background:#f8fafc;padding:20px;text-align:center;color:#6b7280;font-size:14px}
-  ul{padding-left:18px}
-</style>
-</head>
-<body>
-  <span style="display:none;">Your ticket barcode is inside – show it at check‑in</span>
-  <div class="container">
-    <div class="header"><h1>Your Event Badge</h1></div>
-    <div class="content">
-      <h2>Hello ${badge.name},</h2>
-      <p>Your event badge is ready! Please find your barcode below.</p>
-
-      <div class="badge-info">
-        <h3>Badge Details:</h3>
-        <p><strong>Badge&nbsp;ID:</strong> <span class="badge-id">${badge.badgeId}</span></p>
-        <p><strong>Name:</strong> ${badge.name}</p>
-        <p><strong>Type:</strong> ${badge.type}</p>
-        <p><strong>Access:</strong> ${validDaysText}</p>
-      </div>
-
-      <div class="barcode-section">
-        <h3>Your Barcode:</h3>
-        <img src="cid:barcode" alt="Badge Barcode ${badge.badgeId}" class="barcode-image" />
-        <p style="margin-top:10px;font-size:14px;color:#6b7280;">Badge ID: ${badge.badgeId}</p>
-      </div>
-
-      <p>Please save or screenshot this barcode. You'll need it at the event for check‑in.</p>
-
-      <p><strong>Important:</strong></p>
-      <ul>
-        <li>Keep this email handy or add it to your wallet app</li>
-        <li>Present the barcode at check‑in stations</li>
-        <li>${badge.type === 'Multiday Badge'
-          ? 'This badge can only be used once per valid day'
-          : 'This badge is valid for all event days'}</li>
-      </ul>
-    </div>
-    <div class="footer">
-      <p>If you have any questions, contact us at support@example.com.</p>
-    </div>
-  </div>
-</body>
-</html>`
+    return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+            <html data-editor-version="2" class="sg-campaigns" xmlns="http://www.w3.org/1999/xhtml">
+                <head>
+                  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+                  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+            
+                  <style type="text/css">
+                body, p, div {
+                  font-family: arial,helvetica,sans-serif;
+                  font-size: 14px;
+                }
+                body {
+                  color: #000000;
+                }
+                body a {
+                  color: #000000;
+                  text-decoration: none;
+                }
+                p { margin: 0; padding: 0; }
+                table.wrapper {
+                  width:100% !important;
+                  table-layout: fixed;
+                  -webkit-font-smoothing: antialiased;
+                  -webkit-text-size-adjust: 100%;
+                  -moz-text-size-adjust: 100%;
+                  -ms-text-size-adjust: 100%;
+                }
+                img.max-width {
+                  max-width: 100% !important;
+                }
+                .column.of-2 {
+                  width: 50%;
+                }
+                .column.of-3 {
+                  width: 33.333%;
+                }
+                .column.of-4 {
+                  width: 25%;
+                }
+                ul ul ul ul  {
+                  list-style-type: disc !important;
+                }
+                ol ol {
+                  list-style-type: lower-roman !important;
+                }
+                ol ol ol {
+                  list-style-type: lower-latin !important;
+                }
+                ol ol ol ol {
+                  list-style-type: decimal !important;
+                }
+                @media screen and (max-width:480px) {
+                  .preheader .rightColumnContent,
+                  .footer .rightColumnContent {
+                    text-align: left !important;
+                  }
+                  .preheader .rightColumnContent div,
+                  .preheader .rightColumnContent span,
+                  .footer .rightColumnContent div,
+                  .footer .rightColumnContent span {
+                    text-align: left !important;
+                  }
+                  .preheader .rightColumnContent,
+                  .preheader .leftColumnContent {
+                    font-size: 80% !important;
+                    padding: 5px 0;
+                  }
+                  table.wrapper-mobile {
+                    width: 100% !important;
+                    table-layout: fixed;
+                  }
+                  img.max-width {
+                    height: auto !important;
+                    max-width: 100% !important;
+                  }
+                  a.bulletproof-button {
+                    display: block !important;
+                    width: auto !important;
+                    font-size: 80%;
+                    padding-left: 0 !important;
+                    padding-right: 0 !important;
+                  }
+                  .columns {
+                    width: 100% !important;
+                  }
+                  .column {
+                    display: block !important;
+                    width: 100% !important;
+                    padding-left: 0 !important;
+                    padding-right: 0 !important;
+                    margin-left: 0 !important;
+                    margin-right: 0 !important;
+                  }
+                  .social-icon-column {
+                    display: inline-block !important;
+                  }
+                }
+              </style>
+                </head>
+                <body>
+                  <center class="wrapper" data-link-color="#000000" data-body-style="font-size:14px; font-family:arial,helvetica,sans-serif; color:#000000; background-color:#e8fcff;">
+                    <div class="webkit">
+                      <table cellpadding="0" cellspacing="0" border="0" width="100%" class="wrapper" bgcolor="#e8fcff">
+                        <tr>
+                          <td valign="top" bgcolor="#e8fcff" width="100%">
+                            <table width="100%" role="content-container" class="outer" align="center" cellpadding="0" cellspacing="0" border="0">
+                              <tr>
+                                <td width="100%">
+                                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                      <td>
+            
+                                                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;" align="center">
+                                                  <tr>
+                                                    <td role="modules-container" style="padding:0px 0px 0px 0px; color:#000000; text-align:left;" bgcolor="#ffffff" width="100%" align="left"><table class="module preheader preheader-hide" role="module" data-type="preheader" border="0" cellpadding="0" cellspacing="0" width="100%" style="display: none !important; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">
+                <tr>
+                  <td role="module-content">
+                    <p></p>
+                  </td>
+                </tr>
+              </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7657ff89-b997-4619-aff2-72eeece02494" data-mc-module-version="2019-10-22">
+                
+              </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:20px 0px 20px 0px;" bgcolor="#ffffff" data-distribution="1">
+                <tbody>
+                  <tr role="module-content">
+                    <td height="100%" valign="top"><table width="600" style="width:600px; border-spacing:0; border-collapse:collapse; margin:0px 0px 0px 0px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="" class="column column-0">
+                  <tbody>
+                    <tr>
+                      <td style="padding:0px;margin:0px;border-spacing:0;"><table class="wrapper" role="module" data-type="image" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="9f29c991-6500-41ef-9f0e-d56cb5dc1238">
+                <tbody>
+                  <tr>
+                    
+                  </tr>
+                </tbody>
+              </table></td>
+                    </tr>
+                  </tbody>
+                </table></td>
+                  </tr>
+                </tbody>
+              </table><table class="wrapper" role="module" data-type="image" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7bf3c8d1-3ee5-43af-91f2-1ef67b1f878c">
+                <tbody>
+                  <tr>
+                    <td style="font-size:6px; line-height:10px; padding:0px 0px 0px 0px;" valign="top" align="center">
+                      <img border="0" style="display:block; width: min(90%, 250px); color:#000000; text-decoration:none; font-family:Helvetica, arial, sans-serif; font-size:16px; max-width:50% !important; height:auto !important;" width="250" alt="" data-proportionally-constrained="true" data-responsive="true" src="https://lessthan7.studio/media/fort-lauderdale-2025-logo-final.png">
+                    </td>
+                  </tr>
+                </tbody>
+              </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="b35b8ff4-8b3c-4b35-9ed3-f9f25170affc" data-mc-module-version="2019-10-22">
+                <tbody>
+                  <tr>
+                    <td style="padding:40px 20px 18px 20px; line-height:28px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: center"><span style="color: #0088ad; font-size: 28px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif"><strong>¡Bienvenido!</strong></span></div>
+            <div style="font-family: inherit; text-align: center"><span style="color: #0088ad; font-size: 14px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Fort Lauderdale 2025</span></div><div></div></div></td>
+                  </tr>
+                </tbody>
+              </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="f758d404-9b02-4e87-937f-cccaa46787a6" data-mc-module-version="2019-10-22">
+                <tbody>
+                  <tr>
+                    <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Hola ${badge.name},
+                        <br><br>
+                        Nos complace informarte que has sido invitado a asistir a nuestra tarde de esparcimiento para la Asamblea Especial de Fort Lauderdale 2025! A continuación tendrás tu código QR único que servirá como tu tiquete de entrada.</span></div><div></div></div></td>
+                  </tr>
+                </tbody>
+              </table><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="3757586a-ce69-48ba-bd9a-0c0b7937a616">
+                  <tbody>
+                    <tr>
+                      <td align="center" bgcolor="" class="outer-td" style="padding:0px 0px 40px 0px;">
+                        <table border="0" cellpadding="0" cellspacing="0" class="wrapper-mobile" style="text-align:center;">
+                          <tbody>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tbody>
+                    <tr>
+                    <td style="padding:18px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">
+                    Date: Martes, Agosto 12, 2025
+                    <br>
+                    Ubicación: West Palm Beach Christian Convention Center of Jehovah's Witnesses
+                    <br>
+                    Dirección: 1610 Palm Beach Lakes Blvd, West Palm Beach, FL 33401
+                    <br>
+                    Hora: 9am - 2pm
+                    </td>
+                  </tr>
+                </tr>
+                </tbody>
+                </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:30px 20px 0px 20px;" bgcolor="#ffffff" data-distribution="1">
+                <tbody>
+                  <tr role="module-content">
+                    <td height="100%" valign="top"><table width="560" style="width:560px; border-spacing:0; border-collapse:collapse; margin:0px 0px 0px 0px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="" class="column column-0">
+                  <tbody>
+                    <tr>
+                      <td style="padding:0px;margin:0px;border-spacing:0;"><table class="wrapper" role="module" data-type="image" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="e763c2de-823c-4c4a-addc-a1f84fc2c8a0">
+                
+              </table></td>
+                    </tr>
+                  </tbody>
+                </table></td>
+                  </tr>
+                </tbody>
+              </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:0px 20px 20px 20px;" bgcolor="#FFFFFF" data-distribution="1">
+                <tbody>
+                  <tr role="module-content">
+                    <td height="100%" valign="top"><table width="560" style="width:560px; border-spacing:0; border-collapse:collapse; margin:0px 0px 0px 0px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="" class="column column-0">
+                  <tbody>
+                    <tr>
+                      <td style="padding:0px;margin:0px;border-spacing:0;"><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="3cfcd060-6f0a-47e2-9865-855bcde54de7" data-mc-module-version="2019-10-22">
+                
+              </table></td>
+                    </tr>
+                  </tbody>
+                </table></td>
+                  </tr>
+                </tbody>
+              </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:0px 20px 0px 20px;" bgcolor="#ffffff" data-distribution="1">
+                <tbody>
+                  <tr role="module-content">
+                    <td height="100%" valign="top"><table width="560" style="width:560px; border-spacing:0; border-collapse:collapse; margin:0px 0px 0px 0px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="" class="column column-0">
+                  <tbody>
+                    <tr>
+                      <td style="padding:0px;margin:0px;border-spacing:0;"><table class="wrapper" role="module" data-type="image" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="e763c2de-823c-4c4a-addc-a1f84fc2c8a0.1">
+                
+              </table></td>
+                    </tr>
+                  </tbody>
+                </table></td>
+                  </tr>
+                </tbody>
+              </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:0px 20px 0px 20px;" bgcolor="#FFFFFF" data-distribution="1">
+                <tbody>
+                  <tr role="module-content">
+                    <td height="100%" valign="top"><table width="560" style="width:560px; border-spacing:0; border-collapse:collapse; margin:0px 0px 0px 0px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="" class="column column-0">
+                  <tbody>
+                    <tr>
+                      <td style="padding:0px;margin:0px;border-spacing:0;"><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="3cfcd060-6f0a-47e2-9865-855bcde54de7.1" data-mc-module-version="2019-10-22">
+                
+              </table></td>
+                    </tr>
+                  </tbody>
+                </table></td>
+                  </tr>
+                </tbody>
+              </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:0px 20px 0px 20px;" bgcolor="#FFFFFF" data-distribution="1">
+                <tbody>
+                  <tr role="module-content">
+                    <td height="100%" valign="top"><table width="560" style="width:560px; border-spacing:0; border-collapse:collapse; margin:0px 0px 0px 0px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="" class="column column-0">
+                  <tbody>
+                    <tr>
+                      <td style="padding:0px;margin:0px;border-spacing:0;"><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="a49405df-a253-4a28-8d3d-be95449c7d30" data-mc-module-version="2019-10-22">
+                
+              </table></td>
+                    </tr>
+                  </tbody>
+                </table></td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              
+             <table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="ac83dab5-fb19-4d55-9b6e-79fd3596622f">
+                  <tbody>
+                    <tr>
+                      <td align="center" bgcolor="" class="outer-td" style="padding:0px 0px 20px 0px;">
+                        <table border="0" cellpadding="0" cellspacing="0" class="wrapper-mobile" style="text-align:center;">
+                          <tbody>
+            
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table></td>
+                                                  </tr>
+                                                </table>
+                                                <!--[if mso]>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </center>
+                                        <![endif]-->
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </center>
+                </body>
+              </html>`
   }
 
   /*─────────────────────────────────────────────────────────
