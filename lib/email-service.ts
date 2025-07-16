@@ -1,5 +1,6 @@
 import sgMail from '@sendgrid/mail'
-import JsBarcode from 'jsbarcode'            // ← still here if you later need client‑side generation
+import JsBarcode from 'jsbarcode'
+import { createCanvas } from 'canvas'
 
 // ───────────────────────────────────────────────────────────
 //  INITIALISE SENDGRID
@@ -39,17 +40,75 @@ export class EmailService {
   }
 
   /*─────────────────────────────────────────────────────────
-    GENERATE BARCODE  (server‑side SVG → base‑64)
+    GENERATE BARCODE  (server‑side Canvas → base‑64)
   ─────────────────────────────────────────────────────────*/
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
-    const svg = `
-      <svg width="400" height="120" xmlns="http://www.w3.org/2000/svg">
-        <rect width="400" height="120" fill="white" stroke="black" stroke-width="2"/>
-        <text x="200" y="70" text-anchor="middle"
-              font-family="monospace" font-size="24"
-              font-weight="bold" fill="black">${badgeId}</text>
-      </svg>`
-    return Buffer.from(svg).toString('base64')            // raw base‑64 (no data prefix)
+    try {
+      // Create canvas with same dimensions as BadgePreview
+      const canvas = createCanvas(1250, 136)
+      const ctx = canvas.getContext('2d')
+      
+      // Fill white background
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      
+      // Generate barcode on temporary canvas
+      const tempCanvas = createCanvas(1250, 136)
+      JsBarcode(tempCanvas, badgeId, {
+        format: 'CODE128',
+        width: 10,
+        height: 360,
+        displayValue: false,
+        background: '#ffffff',
+        lineColor: '#000000',
+        margin: 10,
+        flat: false
+      })
+      
+      // Draw barcode onto main canvas
+      ctx.drawImage(tempCanvas, 0, 0)
+      
+      // Add text overlay (same as BadgePreview)
+      ctx.fillStyle = 'white'
+      ctx.font = 'bold 36px Arial'
+      const text = badgeId
+      const textMetrics = ctx.measureText(text)
+      const textWidth = textMetrics.width
+      
+      // Position in bottom right
+      const x = canvas.width - textWidth - 5
+      const y = canvas.height
+      
+      // Draw white background for text
+      ctx.fillRect(x - 10, y - 36, textWidth + 20, 36)
+      
+      // Draw black text
+      ctx.fillStyle = 'black'
+      ctx.fillText(text, x, y)
+      
+      // Convert canvas to PNG base64 (without data URI prefix)
+      const buffer = canvas.toBuffer('image/png')
+      return buffer.toString('base64')
+    } catch (error) {
+      console.error('Error generating barcode:', error)
+      // Fallback to simple text-based image
+      const canvas = createCanvas(400, 120)
+      const ctx = canvas.getContext('2d')
+      
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, 400, 120)
+      ctx.strokeStyle = 'black'
+      ctx.lineWidth = 2
+      ctx.strokeRect(0, 0, 400, 120)
+      
+      ctx.fillStyle = 'black'
+      ctx.font = 'bold 24px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText(badgeId, 200, 70)
+      
+      const buffer = canvas.toBuffer('image/png')
+      return buffer.toString('base64')
+    }
   }
 
   /*─────────────────────────────────────────────────────────
@@ -74,10 +133,7 @@ export class EmailService {
   /*─────────────────────────────────────────────────────────
     HTML MIME PART
   ─────────────────────────────────────────────────────────*/
-  private createEmailTemplate(
-    badge: BadgeEmailData,
-    imgSrc: string                                      // ← data‑URI injected here
-  ): string {
+  private createEmailTemplate(badge: BadgeEmailData): string {
     const validDaysText = badge.type === 'Multiday Badge'
       ? `Valid for days: ${badge.days.join(', ')}`
       : 'Valid for all event days'
@@ -118,7 +174,7 @@ export class EmailService {
 
       <div class="barcode-section">
         <h3>Your Barcode:</h3>
-        <img src="${imgSrc}" alt="Badge Barcode ${badge.badgeId}" class="barcode-image" />
+        <img src="cid:barcode" alt="Badge Barcode ${badge.badgeId}" class="barcode-image" />
         <p style="margin-top:10px;font-size:14px;color:#6b7280;">Badge ID: ${badge.badgeId}</p>
       </div>
 
@@ -153,18 +209,26 @@ export class EmailService {
 
     try {
       // ─── 1. create barcode ─────────────────────────────
-      const base64    = await this.generateBarcodeImageServer(badge.badgeId)
-      const dataUri   = `data:image/svg+xml;base64,${base64}`
+      const base64 = await this.generateBarcodeImageServer(badge.badgeId)
 
       // ─── 2. build message object ───────────────────────
       const msg = {
         to: badge.email,
+        cc: 'flscticket@gmail.com',
         from: { email:this.fromEmail, name:this.fromName },
         reply_to: { email:'support@example.com' },
         subject: `Your Event Badge – ${badge.badgeId}`,
         text: this.createPlainText(badge),
-        html: this.createEmailTemplate(badge, dataUri),
-
+        html: this.createEmailTemplate(badge),
+        attachments: [
+          {
+            content: base64,
+            filename: `badge-${badge.badgeId}.png`,
+            type: 'image/png',
+            disposition: 'inline',
+            content_id: 'barcode'
+          }
+        ],
         headers: {
           'List-Unsubscribe': '<mailto:unsubscribe@example.com>',
         },
