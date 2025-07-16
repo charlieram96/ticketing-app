@@ -196,7 +196,7 @@ export class EmailService {
     }
 
     try {
-      // Generate barcode image
+      // Generate barcode image 
       const barcodeBase64 = await this.generateBarcodeImageServer(badge.badgeId)
       
       const msg = {
