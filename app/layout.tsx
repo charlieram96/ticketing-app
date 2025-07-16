@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "FLSC 2025 Ticketing",
   description: "Ticketing system for FLSC 2025",
   icons: {
-    icon: '/favicon.png',
+    icon: '/favicon.ico',
   },
 };
 
