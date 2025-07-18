@@ -66,13 +66,13 @@ export class GoogleSheetsService {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'A1:G1',
+        range: 'Tickets!A1:G1',
       })
 
       if (!response.data.values || response.data.values.length === 0) {
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'A1:G1',
+          range: 'Tickets!A1:G1',
           valueInputOption: 'RAW',
           resource: {
             values: [['Ticket ID', 'Status', 'Created At', 'Redeemed At', 'Reset At', 'History', 'Valid Day']],
@@ -85,7 +85,7 @@ export class GoogleSheetsService {
           // Update header to include Valid Day
           await this.sheets.spreadsheets.values.update({
             spreadsheetId: this.spreadsheetId,
-            range: 'A1:G1',
+            range: 'Tickets!A1:G1',
             valueInputOption: 'RAW',
             resource: {
               values: [['Ticket ID', 'Status', 'Created At', 'Redeemed At', 'Reset At', 'History', 'Valid Day']],
@@ -105,7 +105,7 @@ export class GoogleSheetsService {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'A:G',
+        range: 'Tickets!A:G',
       })
 
       const rows = response.data.values || []
@@ -138,7 +138,7 @@ export class GoogleSheetsService {
       if (needsUpdate) {
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'A:G',
+          range: 'Tickets!A:G',
           valueInputOption: 'RAW',
           resource: { values: updatedRows },
         })
@@ -163,7 +163,7 @@ export class GoogleSheetsService {
     // First get the current data to find the next row
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'A:A',
+      range: 'Tickets!A:A',
     })
 
     const rows = response.data.values || []
@@ -172,7 +172,7 @@ export class GoogleSheetsService {
     // Update specific range starting from column A
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.spreadsheetId,
-      range: `A${nextRow}:G${nextRow + values.length - 1}`,
+      range: `Tickets!A${nextRow}:G${nextRow + values.length - 1}`,
       valueInputOption: 'RAW',
       resource: { values },
     })
@@ -183,7 +183,7 @@ export class GoogleSheetsService {
   async getTicket(ticketId: string): Promise<TicketData | null> {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'A:G',
+      range: 'Tickets!A:G',
     })
 
     const rows = response.data.values || []
@@ -205,7 +205,7 @@ export class GoogleSheetsService {
   async updateTicket(ticketId: string, action: 'redeem' | 'reset' | 'view') {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'A:G',
+      range: 'Tickets!A:G',
     })
 
     const rows = response.data.values || []
@@ -230,7 +230,7 @@ export class GoogleSheetsService {
 
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.spreadsheetId,
-      range: `A${rowIndex + 1}:G${rowIndex + 1}`,
+      range: `Tickets!A${rowIndex + 1}:G${rowIndex + 1}`,
       valueInputOption: 'RAW',
       resource: {
         values: [ticketRow],
@@ -243,7 +243,7 @@ export class GoogleSheetsService {
   async getAllTickets(): Promise<TicketData[]> {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'A:G',
+      range: 'Tickets!A:G',
     })
 
     const rows = response.data.values || []
