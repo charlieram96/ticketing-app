@@ -170,9 +170,9 @@ export default function GeneratePage() {
                       type="number"
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
-                      placeholder="Enter quantity (1-1000)"
+                      placeholder="Enter quantity (1-3000)"
                       min="1"
-                      max="1000"
+                      max="3000"
                       className="bg-white text-gray-900 placeholder:text-gray-400"
                     />
                     <p className="text-xs text-gray-500">
@@ -209,7 +209,7 @@ export default function GeneratePage() {
 
                   <Button
                     onClick={handleGenerate}
-                    disabled={!quantity || isGenerating || parseInt(quantity) < 1 || parseInt(quantity) > 1000}
+                    disabled={!quantity || isGenerating || parseInt(quantity) < 1 || parseInt(quantity) > 3000}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                     size="lg"
                   >
