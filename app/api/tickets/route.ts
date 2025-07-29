@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!validDay || !['day1', 'day2', 'day3', 'day4'].includes(validDay)) {
+    if (!validDay || !['day1', 'day2', 'day3', 'day4', 'day5'].includes(validDay)) {
       return NextResponse.json(
         { error: 'Invalid valid day' },
         { status: 400 }

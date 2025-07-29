@@ -16,7 +16,7 @@ import { generateTicketsPDF } from '@/components/TicketsPDF'
 
 export default function GeneratePage() {
   const [quantity, setQuantity] = useState('')
-  const [validDay, setValidDay] = useState<'day1' | 'day2' | 'day3' | 'day4'>('day1')
+  const [validDay, setValidDay] = useState<'day1' | 'day2' | 'day3' | 'day4' | 'day5'>('day1')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedTickets, setGeneratedTickets] = useState<string[]>([])
   const [showPreview, setShowPreview] = useState(false)
@@ -184,8 +184,8 @@ export default function GeneratePage() {
                     <label className="text-sm font-medium text-gray-700">
                       Valid Event Day
                     </label>
-                    <div className="grid grid-cols-4 gap-3">
-                      {(['day1', 'day2', 'day3', 'day4'] as const).map((day) => (
+                    <div className="grid grid-cols-5 gap-3">
+                      {(['day1', 'day2', 'day3', 'day4', 'day5'] as const).map((day) => (
                         <motion.div key={day} whileTap={{ scale: 0.98 }}>
                           <Button
                             type="button"
@@ -197,7 +197,7 @@ export default function GeneratePage() {
                                 : 'bg-white text-gray-700 hover:bg-gray-50'
                             }`}
                           >
-                            {day === 'day1' ? 'Day 1' : day === 'day2' ? 'Day 2' : day === 'day3' ? 'Day 3' : 'Day 4'}
+                            {day === 'day1' ? 'Day 1' : day === 'day2' ? 'Day 2' : day === 'day3' ? 'Day 3' : day === 'day4' ? 'Day 4' : 'Day 5'}
                           </Button>
                         </motion.div>
                       ))}

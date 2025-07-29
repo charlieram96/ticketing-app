@@ -19,7 +19,7 @@ interface TicketPreviewProps {
     createdAt: string
     redeemedAt?: string
     resetAt?: string
-    validDay: 'day1' | 'day2' | 'day3' | 'day4'
+    validDay: 'day1' | 'day2' | 'day3' | 'day4' | 'day5'
   } | null
   onClose: () => void
 }
@@ -138,10 +138,12 @@ export default function TicketPreview({ ticket, onClose }: TicketPreviewProps) {
                   ? 'bg-blue-50 text-blue-700 border-blue-200'
                   : ticket.validDay === 'day3'
                   ? 'bg-orange-50 text-orange-700 border-orange-200'
-                  : 'bg-green-50 text-green-700 border-green-200'
+                  : ticket.validDay === 'day4'
+                  ? 'bg-green-50 text-green-700 border-green-200'
+                  : 'bg-pink-50 text-pink-700 border-pink-200'
               }
             >
-              Valid {ticket.validDay === 'day1' ? 'Day 1' : ticket.validDay === 'day2' ? 'Day 2' : ticket.validDay === 'day3' ? 'Day 3' : 'Day 4'}
+              Valid {ticket.validDay === 'day1' ? 'Day 1' : ticket.validDay === 'day2' ? 'Day 2' : ticket.validDay === 'day3' ? 'Day 3' : ticket.validDay === 'day4' ? 'Day 4' : 'Day 5'}
             </Badge>
           </div>
 

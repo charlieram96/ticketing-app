@@ -19,7 +19,7 @@ interface ScanResultProps {
       createdAt?: string
       redeemedAt?: string
       resetAt?: string
-      validDay?: 'day1' | 'day2' | 'day3' | 'day4'
+      validDay?: 'day1' | 'day2' | 'day3' | 'day4' | 'day5'
       history?: { action: string; timestamp: string }[]
       // Badge details
       badgeId?: string
@@ -129,10 +129,14 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
                           ? 'bg-purple-600/20 text-purple-400 border-purple-600/30'
                           : result.details.validDay === 'day2'
                           ? 'bg-blue-600/20 text-blue-400 border-blue-600/30'
-                          : 'bg-orange-600/20 text-orange-400 border-orange-600/30'
+                          : result.details.validDay === 'day3'
+                          ? 'bg-orange-600/20 text-orange-400 border-orange-600/30'
+                          : result.details.validDay === 'day4'
+                          ? 'bg-green-600/20 text-green-400 border-green-600/30'
+                          : 'bg-pink-600/20 text-pink-400 border-pink-600/30'
                       }
                     >
-                      {result.details.validDay === 'day1' ? 'Day 1' : result.details.validDay === 'day2' ? 'Day 2' : result.details.validDay === 'day3' ? 'Day 3' : 'Day 4'}
+                      {result.details.validDay === 'day1' ? 'Day 1' : result.details.validDay === 'day2' ? 'Day 2' : result.details.validDay === 'day3' ? 'Day 3' : result.details.validDay === 'day4' ? 'Day 4' : 'Day 5'}
                     </Badge>
                   </div>
                 )}

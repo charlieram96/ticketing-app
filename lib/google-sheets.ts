@@ -21,7 +21,7 @@ export interface TicketData {
   createdAt: string
   redeemedAt?: string
   resetAt?: string
-  validDay: 'day1' | 'day2' | 'day3' | 'day4'
+  validDay: 'day1' | 'day2' | 'day3' | 'day4' | 'day5'
   history: {
     action: 'created' | 'redeemed' | 'reset' | 'viewed'
     timestamp: string
@@ -148,7 +148,7 @@ export class GoogleSheetsService {
     }
   }
 
-  async createTickets(tickets: string[], validDay: 'day1' | 'day2' | 'day3' | 'day4' = 'day1') {
+  async createTickets(tickets: string[], validDay: 'day1' | 'day2' | 'day3' | 'day4' | 'day5' = 'day1') {
     const timestamp = new Date().toISOString()
     const values = tickets.map(id => [
       id,
@@ -197,7 +197,7 @@ export class GoogleSheetsService {
       createdAt: ticketRow[2],
       redeemedAt: ticketRow[3] || undefined,
       resetAt: ticketRow[4] || undefined,
-      validDay: (ticketRow[6] || 'day1') as 'day1' | 'day2' | 'day3' | 'day4',
+      validDay: (ticketRow[6] || 'day1') as 'day1' | 'day2' | 'day3' | 'day4' | 'day5',
       history: JSON.parse(ticketRow[5] || '[]'),
     }
   }
@@ -253,7 +253,7 @@ export class GoogleSheetsService {
       createdAt: row[2],
       redeemedAt: row[3] || undefined,
       resetAt: row[4] || undefined,
-      validDay: (row[6] || 'day1') as 'day1' | 'day2' | 'day3' | 'day4',
+      validDay: (row[6] || 'day1') as 'day1' | 'day2' | 'day3' | 'day4' | 'day5',
       history: JSON.parse(row[5] || '[]'),
     }))
   }

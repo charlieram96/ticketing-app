@@ -6,7 +6,7 @@ import { generateBarcodeDataURLs } from '@/utils/barcodeUtils'
 
 interface TicketsPDFProps {
   tickets: string[]
-  validDay: 'day1' | 'day2' | 'day3' | 'day4'
+  validDay: 'day1' | 'day2' | 'day3' | 'day4' | 'day5'
   barcodes: Record<string, string>
 }
 
@@ -80,7 +80,7 @@ const TicketsPDFDocument = ({ tickets, validDay, barcodes }: TicketsPDFProps) =>
 
 export const generateTicketsPDF = async (
   tickets: string[],
-  validDay: 'day1' | 'day2' | 'day3' | 'day4'
+  validDay: 'day1' | 'day2' | 'day3' | 'day4' | 'day5'
 ) => {
   const barcodes = generateBarcodeDataURLs(tickets)
   const blob = await pdf(
