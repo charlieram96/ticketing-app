@@ -17,9 +17,11 @@ import logo from '@/public/Todo_Nuevo_Wave_FINAL_Color.png'
 export default function Home() {
   const [scanResult, setScanResult] = useState<any>(null)
   const router = useRouter()
+  const userRole = Cookies.get('userRole') || 'admin'
 
   const handleLogout = () => {
     Cookies.remove('authenticated')
+    Cookies.remove('userRole')
     router.push('/login')
   }
 
@@ -43,24 +45,28 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-3">
-              <Link href="/tickets">
-                <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4">
-                  <Ticket className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Tickets</span>
-                </Button>
-              </Link>
-              <Link href="/badges">
-                <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4">
-                  <BadgeCheck className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Badges</span>
-                </Button>
-              </Link>
-              <Link href="/generate">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 px-2 sm:px-4">
-                  <Plus className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Generate</span>
-                </Button>
-              </Link>
+              {userRole === 'admin' && (
+                <>
+                  <Link href="/tickets">
+                    <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4">
+                      <Ticket className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Tickets</span>
+                    </Button>
+                  </Link>
+                  <Link href="/badges">
+                    <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-50 px-2 sm:px-4">
+                      <BadgeCheck className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Badges</span>
+                    </Button>
+                  </Link>
+                  <Link href="/generate">
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 px-2 sm:px-4">
+                      <Plus className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Generate</span>
+                    </Button>
+                  </Link>
+                </>
+              )}
               <Button
                 variant="destructive"
                 size="sm"

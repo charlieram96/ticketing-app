@@ -20,6 +20,7 @@ interface BadgeData {
   email: string
   type: 'Badge' | 'Multiday Badge'
   days: number[]
+  companion?: string
   checkInHistory: { timestamp: string; day?: number }[]
   scanHistory?: { day: number; timestamps: string[] }[]
 }
@@ -40,7 +41,8 @@ export default function BadgesPage() {
     department: '',
     email: '',
     type: 'Badge' as 'Badge' | 'Multiday Badge',
-    days: [1, 2, 3, 4] as number[]
+    days: [1, 2, 3, 4, 5] as number[],
+    companion: ''
   })
   const [editForm, setEditForm] = useState<{
     badgeId: string
@@ -49,6 +51,7 @@ export default function BadgesPage() {
     email: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
+    companion?: string
   } | null>(null)
   const [selectedBadgeIds, setSelectedBadgeIds] = useState<string[]>([])
   const [showEmailModal, setShowEmailModal] = useState(false)
@@ -131,7 +134,8 @@ export default function BadgesPage() {
           department: editForm.department,
           email: editForm.email,
           type: editForm.type,
-          days: editForm.days
+          days: editForm.days,
+          companion: editForm.companion
         }),
       })
 
@@ -173,7 +177,8 @@ export default function BadgesPage() {
           department: '',
           email: '',
           type: 'Badge',
-          days: [1, 2, 3, 4]
+          days: [1, 2, 3, 4, 5],
+          companion: ''
         })
       } else {
         // Try to parse error response
@@ -624,7 +629,8 @@ export default function BadgesPage() {
                                       department: badge.department,
                                       email: badge.email,
                                       type: badge.type,
-                                      days: badge.days
+                                      days: badge.days,
+                                      companion: badge.companion
                                     })
                                     setShowEditModal(true)
                                   }}
@@ -707,6 +713,19 @@ export default function BadgesPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="companion" className="text-sm font-medium text-gray-700">
+                Companion (Optional)
+              </Label>
+              <Input
+                id="companion"
+                value={createForm.companion}
+                onChange={(e) => setCreateForm({ ...createForm, companion: e.target.value })}
+                placeholder="Enter companion name"
+                className="bg-white text-gray-900"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">
                 Badge Type
               </Label>
@@ -714,7 +733,7 @@ export default function BadgesPage() {
                 <Button
                   type="button"
                   variant={createForm.type === 'Badge' ? 'default' : 'outline'}
-                  onClick={() => setCreateForm({ ...createForm, type: 'Badge', days: [1, 2, 3, 4] })}
+                  onClick={() => setCreateForm({ ...createForm, type: 'Badge', days: [1, 2, 3, 4, 5] })}
                   className="flex-1"
                 >
                   Regular Badge
@@ -735,8 +754,8 @@ export default function BadgesPage() {
                 <Label className="text-sm font-medium text-gray-700">
                   Valid Days
                 </Label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[1, 2, 3, 4].map((day) => (
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {[1, 2, 3, 4, 5].map((day) => (
                     <motion.div key={day} whileTap={{ scale: 0.98 }}>
                       <Button
                         type="button"
@@ -805,7 +824,8 @@ export default function BadgesPage() {
                     department: '',
                     email: '',
                     type: 'Badge',
-                    days: [1, 2, 3, 4]
+                    days: [1, 2, 3, 4, 5],
+                    companion: ''
                   })
                 }}
                 variant="outline"
@@ -873,6 +893,19 @@ export default function BadgesPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="edit-companion" className="text-sm font-medium text-gray-700">
+                  Companion (Optional)
+                </Label>
+                <Input
+                  id="edit-companion"
+                  value={editForm.companion || ''}
+                  onChange={(e) => setEditForm({ ...editForm, companion: e.target.value })}
+                  placeholder="Enter companion name"
+                  className="bg-white text-gray-900"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
                   Badge Type
                 </Label>
@@ -880,7 +913,7 @@ export default function BadgesPage() {
                   <Button
                     type="button"
                     variant={editForm.type === 'Badge' ? 'default' : 'outline'}
-                    onClick={() => setEditForm({ ...editForm, type: 'Badge', days: [1, 2, 3, 4] })}
+                    onClick={() => setEditForm({ ...editForm, type: 'Badge', days: [1, 2, 3, 4, 5] })}
                     className="flex-1"
                   >
                     Regular Badge
@@ -888,7 +921,7 @@ export default function BadgesPage() {
                   <Button
                     type="button"
                     variant={editForm.type === 'Multiday Badge' ? 'default' : 'outline'}
-                    onClick={() => setEditForm({ ...editForm, type: 'Multiday Badge', days: editForm.days.length === 4 ? [1] : editForm.days })}
+                    onClick={() => setEditForm({ ...editForm, type: 'Multiday Badge', days: editForm.days.length === 5 ? [1] : editForm.days })}
                     className="flex-1"
                   >
                     Multiday Badge
@@ -901,8 +934,8 @@ export default function BadgesPage() {
                   <Label className="text-sm font-medium text-gray-700">
                     Valid Days
                   </Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[1, 2, 3, 4].map((day) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {[1, 2, 3, 4, 5].map((day) => (
                       <motion.div key={day} whileTap={{ scale: 0.98 }}>
                         <Button
                           type="button"

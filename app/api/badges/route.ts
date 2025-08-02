@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, department, email, type, days } = await request.json()
+    const { name, department, email, type, days, companion } = await request.json()
     
     if (!name || !department || !type) {
       return NextResponse.json(
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate days array
-    const validDays = days || [1, 2, 3, 4]
+    const validDays = days || [1, 2, 3, 4, 5]
     if (!Array.isArray(validDays) || validDays.length === 0) {
       return NextResponse.json(
         { error: 'Days must be a non-empty array' },
@@ -55,11 +55,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate all days are between 1-4
-    const validDayOptions = [1, 2, 3, 4]
+    // Validate all days are between 1-5
+    const validDayOptions = [1, 2, 3, 4, 5]
     if (!validDays.every(day => validDayOptions.includes(day))) {
       return NextResponse.json(
-        { error: 'Days must be between 1 and 4' },
+        { error: 'Days must be between 1 and 5' },
         { status: 400 }
       )
     }
@@ -94,7 +94,8 @@ export async function POST(request: NextRequest) {
       department,
       email: email || '',
       type,
-      days: validDays
+      days: validDays,
+      companion: companion || ''
     })
     
     return NextResponse.json(badge)

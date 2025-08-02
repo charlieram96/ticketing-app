@@ -35,6 +35,7 @@ export interface BadgeData {
   email: string
   type: 'Badge' | 'Multiday Badge'
   days: number[]
+  companion?: string
   checkInHistory: {
     timestamp: string
     day?: number
@@ -261,7 +262,7 @@ export class GoogleSheetsService {
   async getAllBadges(): Promise<BadgeData[]> {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'Badges!A:G',
+      range: 'Badges!A:H',
     })
 
     const rows = response.data.values || []
@@ -304,6 +305,7 @@ export class GoogleSheetsService {
         email: row[6] || '',
         type: type as 'Badge' | 'Multiday Badge',
         days,
+        companion: row[7] || '',
         checkInHistory: JSON.parse(row[3] || '[]'),
         scanHistory
       }
@@ -313,7 +315,7 @@ export class GoogleSheetsService {
   async getBadge(badgeId: string): Promise<BadgeData | null> {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'Badges!A:G',
+      range: 'Badges!A:H',
     })
 
     const rows = response.data.values || []
@@ -356,6 +358,7 @@ export class GoogleSheetsService {
       email: badgeRow[6] || '',
       type: type as 'Badge' | 'Multiday Badge',
       days,
+      companion: badgeRow[7] || '',
       checkInHistory: JSON.parse(badgeRow[3] || '[]'),
       scanHistory
     }
@@ -364,7 +367,7 @@ export class GoogleSheetsService {
   async updateBadgeCheckIn(badgeId: string, day?: number): Promise<BadgeData | null> {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'Badges!A:G',
+      range: 'Badges!A:H',
     })
 
     const rows = response.data.values || []
@@ -420,7 +423,7 @@ export class GoogleSheetsService {
 
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.spreadsheetId,
-      range: `Badges!A${rowIndex + 1}:G${rowIndex + 1}`,
+      range: `Badges!A${rowIndex + 1}:H${rowIndex + 1}`,
       valueInputOption: 'RAW',
       resource: {
         values: [badgeRow],
@@ -434,29 +437,29 @@ export class GoogleSheetsService {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Badges!A1:G1',
+        range: 'Badges!A1:H1',
       })
 
       if (!response.data.values || response.data.values.length === 0) {
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'Badges!A1:G1',
+          range: 'Badges!A1:H1',
           valueInputOption: 'RAW',
           resource: {
-            values: [['Badge ID', 'Name', 'Department', 'Check-in History', 'Type', 'Days', 'Email']],
+            values: [['Badge ID', 'Name', 'Department', 'Check-in History', 'Type', 'Days', 'Email', 'Companion']],
           },
         })
       } else {
         // Check if header has all columns
         const header = response.data.values[0]
-        if (header.length < 7 || header[4] !== 'Type' || header[5] !== 'Days' || header[6] !== 'Email') {
+        if (header.length < 8 || header[4] !== 'Type' || header[5] !== 'Days' || header[6] !== 'Email' || header[7] !== 'Companion') {
           // Update header to include new columns
           await this.sheets.spreadsheets.values.update({
             spreadsheetId: this.spreadsheetId,
-            range: 'Badges!A1:G1',
+            range: 'Badges!A1:H1',
             valueInputOption: 'RAW',
             resource: {
-              values: [['Badge ID', 'Name', 'Department', 'Check-in History', 'Type', 'Days', 'Email']],
+              values: [['Badge ID', 'Name', 'Department', 'Check-in History', 'Type', 'Days', 'Email', 'Companion']],
             },
           })
         }
@@ -529,7 +532,7 @@ export class GoogleSheetsService {
   async resetBadge(badgeId: string): Promise<BadgeData | null> {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'Badges!A:G',
+      range: 'Badges!A:H',
     })
 
     const rows = response.data.values || []
@@ -546,7 +549,7 @@ export class GoogleSheetsService {
       
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `Badges!A${rowIndex + 1}:G${rowIndex + 1}`,
+        range: `Badges!A${rowIndex + 1}:H${rowIndex + 1}`,
         valueInputOption: 'RAW',
         resource: {
           values: [badgeRow],
@@ -564,6 +567,7 @@ export class GoogleSheetsService {
     email: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
+    companion?: string
   }): Promise<BadgeData> {
     const values = [[
       badgeData.badgeId,
@@ -572,7 +576,8 @@ export class GoogleSheetsService {
       JSON.stringify([]), // Empty check-in history
       badgeData.type,
       JSON.stringify(badgeData.days),
-      badgeData.email
+      badgeData.email,
+      badgeData.companion || ''
     ]]
 
     // First get the current data to find the next row
@@ -587,7 +592,7 @@ export class GoogleSheetsService {
     // Update specific range starting from column A
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.spreadsheetId,
-      range: `Badges!A${nextRow}:G${nextRow}`,
+      range: `Badges!A${nextRow}:H${nextRow}`,
       valueInputOption: 'RAW',
       resource: { values },
     })
@@ -607,10 +612,11 @@ export class GoogleSheetsService {
     email: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
+    companion?: string
   }): Promise<BadgeData | null> {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: 'Badges!A:G',
+      range: 'Badges!A:H',
     })
 
     const rows = response.data.values || []
@@ -626,15 +632,16 @@ export class GoogleSheetsService {
     badgeRow[4] = updateData.type
     badgeRow[5] = JSON.stringify(updateData.days)
     badgeRow[6] = updateData.email
+    badgeRow[7] = updateData.companion || ''
     
-    // Ensure we have all 7 columns
-    while (badgeRow.length < 7) {
+    // Ensure we have all 8 columns
+    while (badgeRow.length < 8) {
       badgeRow.push('')
     }
 
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.spreadsheetId,
-      range: `Badges!A${rowIndex + 1}:G${rowIndex + 1}`,
+      range: `Badges!A${rowIndex + 1}:H${rowIndex + 1}`,
       valueInputOption: 'RAW',
       resource: {
         values: [badgeRow],

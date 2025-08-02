@@ -27,6 +27,7 @@ interface ScanResultProps {
       department?: string
       type?: 'Badge' | 'Multiday Badge'
       days?: number[]
+      companion?: string
       checkInHistory?: { timestamp: string; day?: number }[]
       scanHistory?: { day: number; timestamps: string[] }[]
     }
@@ -199,6 +200,15 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
                     <span className="text-sm text-white/60">Department:</span>
                     <span className="text-sm text-white">
                       {result.details.department}
+                    </span>
+                  </div>
+                )}
+                
+                {result.isBadge && result.details.companion && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Acompañante:</span>
+                    <span className="text-sm text-white font-medium">
+                      {result.details.companion}
                     </span>
                   </div>
                 )}

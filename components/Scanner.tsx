@@ -34,6 +34,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   const [showCameraConfirm, setShowCameraConfirm] = useState(false)
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [manualBarcodeId, setManualBarcodeId] = useState('')
+  const [manualEntryType, setManualEntryType] = useState<'badge' | 'ticket'>('ticket')
   // Default to back camera on mobile, front camera on desktop
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
     typeof window !== 'undefined' && window.innerWidth < 768 ? 'environment' : 'user'
@@ -393,8 +394,8 @@ export default function Scanner({ onScanResult }: ScannerProps) {
     setIsProcessing(true)
     
     try {
-      // Add the appropriate prefix based on mode
-      const prefix = mode === 'badge' ? 'BDG-' : 'TKT-'
+      // Add the appropriate prefix based on manual entry type selection
+      const prefix = manualEntryType === 'badge' ? 'BDG-' : 'TKT-'
       const fullId = prefix + manualBarcodeId.trim()
       await handleScan(fullId)
     } finally {
@@ -591,18 +592,44 @@ export default function Scanner({ onScanResult }: ScannerProps) {
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
             <div className="text-gray-900 text-lg font-semibold mb-3">Manual Entry</div>
             <div className="text-gray-600 text-sm mb-4">
-              Enter the {mode === 'badge' ? 'badge' : 'ticket'} number manually:
+              Select type and enter the ID number manually:
             </div>
+            
+            {/* Type Selector */}
+            <div className="mb-4">
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Type</label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={manualEntryType === 'badge' ? 'default' : 'outline'}
+                  onClick={() => setManualEntryType('badge')}
+                  className="flex-1"
+                  size="sm"
+                >
+                  Badge (BDG)
+                </Button>
+                <Button
+                  type="button"
+                  variant={manualEntryType === 'ticket' ? 'default' : 'outline'}
+                  onClick={() => setManualEntryType('ticket')}
+                  className="flex-1"
+                  size="sm"
+                >
+                  Ticket (TKT)
+                </Button>
+              </div>
+            </div>
+            
             <div className="relative mb-4">
               <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                 <div className="px-3 py-3 bg-gray-50 text-gray-500 font-mono border-r border-gray-300">
-                  {mode === 'badge' ? 'BDG-' : 'TKT-'}
+                  {manualEntryType === 'badge' ? 'BDG-' : 'TKT-'}
                 </div>
                 <input
                   type="text"
                   value={manualBarcodeId}
                   onChange={(e) => setManualBarcodeId(e.target.value)}
-                  placeholder={mode === 'badge' ? '123456' : '1234567890'}
+                  placeholder="123456"
                   className="flex-1 p-3 font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-inset"
                   onKeyDown={(e) => e.key === 'Enter' && handleManualEntry()}
                   autoFocus

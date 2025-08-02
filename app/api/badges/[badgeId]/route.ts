@@ -126,7 +126,7 @@ export async function PUT(
 ) {
   try {
     const { badgeId } = await params
-    const { name, department, email, type, days } = await request.json()
+    const { name, department, email, type, days, companion } = await request.json()
     
     if (!name || !department || !type) {
       return NextResponse.json(
@@ -150,11 +150,11 @@ export async function PUT(
       )
     }
 
-    // Validate all days are between 1-4
-    const validDayOptions = [1, 2, 3, 4]
+    // Validate all days are between 1-5
+    const validDayOptions = [1, 2, 3, 4, 5]
     if (!days.every(day => validDayOptions.includes(day))) {
       return NextResponse.json(
-        { error: 'Days must be between 1 and 4' },
+        { error: 'Days must be between 1 and 5' },
         { status: 400 }
       )
     }
@@ -175,7 +175,8 @@ export async function PUT(
       department,
       email: email || '',
       type,
-      days
+      days,
+      companion: companion || ''
     })
     
     if (!updatedBadge) {

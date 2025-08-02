@@ -32,6 +32,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         Cookies.set('authenticated', 'true', { expires: 7 })
+        Cookies.set('userRole', data.role || 'admin', { expires: 7 })
         router.push('/')
       } else {
         setError(data.error || 'Invalid password')

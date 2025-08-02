@@ -17,6 +17,7 @@ interface BadgePreviewProps {
     email: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
+    companion?: string
     checkInHistory: { timestamp: string; day?: number }[]
     scanHistory?: { day: number; timestamps: string[] }[]
   } | null
@@ -28,6 +29,7 @@ interface BadgePreviewProps {
     email: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
+    companion?: string
   }) => void
 }
 
@@ -209,6 +211,14 @@ export default function BadgePreview({ badge, onClose, onEdit }: BadgePreviewPro
                   {badge.department}
                 </Badge>
               </div>
+              {badge.companion && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Acompañante:</span>
+                  <Badge className="bg-green-100 text-green-700">
+                    {badge.companion}
+                  </Badge>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Badge Type:</span>
                 <Badge 
@@ -373,7 +383,8 @@ export default function BadgePreview({ badge, onClose, onEdit }: BadgePreviewPro
                     department: badge.department,
                     email: badge.email,
                     type: badge.type,
-                    days: badge.days
+                    days: badge.days,
+                    companion: badge.companion
                   })
                   onClose()
                 }}
