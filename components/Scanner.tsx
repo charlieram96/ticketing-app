@@ -73,11 +73,12 @@ export default function Scanner({ onScanResult }: ScannerProps) {
         experimentalFeatures: {
           useBarCodeDetectorIfSupported: true
         },
-        // Simplified camera constraints
+        // Enhanced camera constraints with autofocus
         videoConstraints: {
           facingMode: facingMode,
           width: { ideal: 1280 },
-          height: { ideal: 720 }
+          height: { ideal: 720 },
+          focusMode: 'continuous'
         },
         rememberLastUsedCamera: true
       }
