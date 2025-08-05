@@ -18,6 +18,7 @@ interface BadgeData {
   name: string
   department: string
   email: string
+  phone?: string
   type: 'Badge' | 'Multiday Badge'
   days: number[]
   companion?: string
@@ -40,6 +41,7 @@ export default function BadgesPage() {
     name: '',
     department: '',
     email: '',
+    phone: '',
     type: 'Badge' as 'Badge' | 'Multiday Badge',
     days: [1, 2, 3, 4, 5] as number[],
     companion: ''
@@ -49,6 +51,7 @@ export default function BadgesPage() {
     name: string
     department: string
     email: string
+    phone?: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
     companion?: string
@@ -133,6 +136,7 @@ export default function BadgesPage() {
           name: editForm.name,
           department: editForm.department,
           email: editForm.email,
+          phone: editForm.phone,
           type: editForm.type,
           days: editForm.days,
           companion: editForm.companion
@@ -176,6 +180,7 @@ export default function BadgesPage() {
           name: '',
           department: '',
           email: '',
+          phone: '',
           type: 'Badge',
           days: [1, 2, 3, 4, 5],
           companion: ''
@@ -531,6 +536,7 @@ export default function BadgesPage() {
                           <TableHead className="text-gray-700">Name</TableHead>
                           <TableHead className="text-gray-700">Department</TableHead>
                           <TableHead className="text-gray-700 hidden sm:table-cell">Email</TableHead>
+                          <TableHead className="text-gray-700 hidden lg:table-cell">Phone</TableHead>
                           <TableHead className="text-gray-700">Type</TableHead>
                           <TableHead className="text-gray-700 hidden sm:table-cell">Valid Days</TableHead>
                           <TableHead className="text-gray-700 text-center">Check-ins</TableHead>
@@ -587,6 +593,15 @@ export default function BadgesPage() {
                                 )}
                               </div>
                             </TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                              <div className="max-w-[120px] truncate text-sm text-gray-600">
+                                {badge.phone ? (
+                                  <span className="text-green-600">{badge.phone}</span>
+                                ) : (
+                                  <span className="text-gray-400 italic">No phone</span>
+                                )}
+                              </div>
+                            </TableCell>
                             <TableCell>
                               <Badge 
                                 variant={badge.type === 'Multiday Badge' ? 'default' : 'outline'}
@@ -628,6 +643,7 @@ export default function BadgesPage() {
                                       name: badge.name,
                                       department: badge.department,
                                       email: badge.email,
+                                      phone: badge.phone,
                                       type: badge.type,
                                       days: badge.days,
                                       companion: badge.companion
@@ -654,7 +670,16 @@ export default function BadgesPage() {
         badge={selectedBadge} 
         onClose={() => setSelectedBadge(null)}
         onEdit={(badge) => {
-          setEditForm(badge)
+          setEditForm({
+            badgeId: badge.badgeId,
+            name: badge.name,
+            department: badge.department,
+            email: badge.email,
+            phone: badge.phone,
+            type: badge.type,
+            days: badge.days,
+            companion: badge.companion
+          })
           setShowEditModal(true)
         }}
       />
@@ -708,6 +733,20 @@ export default function BadgesPage() {
                 value={createForm.email}
                 onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
                 placeholder="Enter email address"
+                className="bg-white text-gray-900"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                Phone Number (Optional)
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={createForm.phone}
+                onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
+                placeholder="Enter phone number"
                 className="bg-white text-gray-900"
               />
             </div>
@@ -823,6 +862,7 @@ export default function BadgesPage() {
                     name: '',
                     department: '',
                     email: '',
+                    phone: '',
                     type: 'Badge',
                     days: [1, 2, 3, 4, 5],
                     companion: ''
@@ -888,6 +928,20 @@ export default function BadgesPage() {
                   value={editForm.email}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                   placeholder="Enter email address"
+                  className="bg-white text-gray-900"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone" className="text-sm font-medium text-gray-700">
+                  Phone Number (Optional)
+                </Label>
+                <Input
+                  id="edit-phone"
+                  type="tel"
+                  value={editForm.phone || ''}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  placeholder="Enter phone number"
                   className="bg-white text-gray-900"
                 />
               </div>
