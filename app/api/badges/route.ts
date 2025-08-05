@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, department, email, type, days, companion } = await request.json()
+    const { name, department, email, phone, type, days, companion } = await request.json()
     
     if (!name || !department || !type) {
       return NextResponse.json(
@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
       name,
       department,
       email: email || '',
+      phone: phone || '',
       type,
       days: validDays,
       companion: companion || ''

@@ -126,7 +126,7 @@ export async function PUT(
 ) {
   try {
     const { badgeId } = await params
-    const { name, department, email, type, days, companion } = await request.json()
+    const { name, department, email, phone, type, days, companion } = await request.json()
     
     if (!name || !department || !type) {
       return NextResponse.json(
@@ -174,6 +174,7 @@ export async function PUT(
       name,
       department,
       email: email || '',
+      phone: phone || '',
       type,
       days,
       companion: companion || ''
