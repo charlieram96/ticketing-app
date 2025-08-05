@@ -52,12 +52,21 @@ async function uploadBarcodeToS3(badgeId: string, barcodeBuffer: Buffer): Promis
     Body: barcodeBuffer,
     ContentType: 'image/png',
     ACL: 'public-read', // Make the file publicly readable
+    CacheControl: 'public, max-age=31536000', // Cache for 1 year
+    ContentDisposition: 'inline', // Display inline, not as download
   }
 
   await s3.upload(params).promise()
   
   // Return the direct HTTPS URL with no redirects
-  return `https://${bucketName}.s3.${region}.amazonaws.com/barcodes/${badgeId}.png`
+  const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/barcodes/${badgeId}.png`
+  console.log(`[S3 Upload] Barcode uploaded successfully:`)
+  console.log(`  Badge ID: ${badgeId}`)
+  console.log(`  S3 URL: ${s3Url}`)
+  console.log(`  Bucket: ${bucketName}`)
+  console.log(`  Region: ${region}`)
+  
+  return s3Url
 }
 
 // ───────────────────────────────────────────────────────────
@@ -292,7 +301,7 @@ export class EmailService {
                                                     <td role="modules-container" style="padding:0px 0px 0px 0px; color:#000000; text-align:left;" bgcolor="#ffffff" width="100%" align="left"><table class="module preheader preheader-hide" role="module" data-type="preheader" border="0" cellpadding="0" cellspacing="0" width="100%" style="display: none !important; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">
                 <tr>
                   <td role="module-content">
-                    <p>Tu entrada</p>
+                    <p>Tu entrada para el evento Fort Lauderdale 2025 - ${badge.badgeId}</p>
                   </td>
                 </tr>
               </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7657ff89-b997-4619-aff2-72eeece02494" data-mc-module-version="2019-10-22">
@@ -502,22 +511,24 @@ export class EmailService {
       
       // ─── 2. Generate HTML with S3 barcode URL ────────
       const htmlContent = await this.createEmailTemplate(badge, barcodeUrl)
+      console.log(`[Email] Preparing to send email to: ${badge.email}`)
+      console.log(`[Email] Barcode URL in email: ${barcodeUrl}`)
 
       // ─── 3. build message object ───────────────────────
       // Note: For better deliverability, ensure your domain has proper SPF, DKIM, and DMARC records configured
       const msg = {
         to: badge.email,
-        bcc: 'ticketing@fll2025.com',
+        // Remove bcc to reduce spam score
         from: { email:this.fromEmail, name:this.fromName },
-        reply_to: { email: 'ticketing@fll2025.com' }, // Use legitimate email
-        subject: `Fort Lauderdale 2025`, // More specific subject
+        replyTo: 'ticketing@fll2025.com', // Use replyTo instead of reply_to
+        subject: `Tu entrada Fort Lauderdale 2025 - ${badge.badgeId}`, // More specific subject with badge ID
         text: this.createPlainText(badge),
         html: htmlContent,
         // No attachments needed since barcode is hosted on S3
         headers: {
-          'List-Unsubscribe': '<mailto:ticketing@fll2025.com?subject=Unsubscribe>',
           'X-Priority': '3', // Normal priority
           'X-Mailer': 'Fort Lauderdale 2025 Event System',
+          'Content-Type': 'text/html; charset=UTF-8',
         },
       }
 
@@ -526,7 +537,17 @@ export class EmailService {
       return { success:true, email:badge.email }
 
     } catch (error:any) {
-      console.error('Error sending badge email:', error)
+      console.error('[Email Error] Failed to send badge email:')
+      console.error(`  Badge ID: ${badge.badgeId}`)
+      console.error(`  Email: ${badge.email}`)
+      console.error(`  Error: ${error.message}`)
+      console.error(`  Stack: ${error.stack}`)
+      
+      // Check for specific SendGrid errors
+      if (error.response && error.response.body && error.response.body.errors) {
+        console.error('[SendGrid Errors]:', JSON.stringify(error.response.body.errors, null, 2))
+      }
+      
       return { success:false, email:badge.email, error:error.message || 'Failed to send email' }
     }
   }
