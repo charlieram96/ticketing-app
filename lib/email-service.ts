@@ -43,16 +43,21 @@ export interface BadgeEmailData {
 //  HELPER FUNCTIONS
 // ───────────────────────────────────────────────────────────
 async function uploadBarcodeToS3(badgeId: string, barcodeBuffer: Buffer): Promise<string> {
+  const bucketName = process.env.AWS_S3_BUCKET_NAME!
+  const region = process.env.AWS_REGION || 'us-east-1'
+  
   const params = {
-    Bucket: process.env.AWS_S3_BUCKET_NAME!, // Your S3 bucket name
+    Bucket: bucketName,
     Key: `barcodes/${badgeId}.png`, // File path in the bucket
     Body: barcodeBuffer,
     ContentType: 'image/png',
     ACL: 'public-read', // Make the file publicly readable
   }
 
-  const uploadResult = await s3.upload(params).promise()
-  return uploadResult.Location // Return the URL of the uploaded barcode
+  await s3.upload(params).promise()
+  
+  // Return the direct HTTPS URL with no redirects
+  return `https://${bucketName}.s3.${region}.amazonaws.com/barcodes/${badgeId}.png`
 }
 
 // ───────────────────────────────────────────────────────────
@@ -73,7 +78,7 @@ export class EmailService {
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
     try {
       // Create canvas with same dimensions as BadgePreview
-      const canvas = createCanvas(1250, 136)
+      const canvas  = createCanvas(400, 120);
       const ctx = canvas.getContext('2d')
       
       // Fill white background
@@ -81,11 +86,11 @@ export class EmailService {
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       
       // Generate barcode on temporary canvas
-      const tempCanvas = createCanvas(1250, 136)
+      const tempCanvas = createCanvas(400, 120)
       JsBarcode(tempCanvas, badgeId, {
         format: 'CODE128',
         width: 10,
-        height: 360,
+        height: 120,
         displayValue: false,
         background: '#ffffff',
         lineColor: '#000000',
@@ -358,7 +363,15 @@ export class EmailService {
                   </tr>
                   <tr>
                     <td style="font-size:6px; line-height:10px; padding:0px 0px 100px 0px;" valign="top" align="center">
-                      <img border="0" style="display:block; width: min(90%, 400px); color:#000000; text-decoration:none; font-family:Helvetica, arial, sans-serif; font-size:16px; max-width:90% !important; height:auto !important;" width="400" alt="Barcode ${badge.badgeId}" data-proportionally-constrained="true" data-responsive="true" src="${barcodeUrl}">
+                      <img 
+                        src="${barcodeUrl}"
+                        alt="Código de barras ${badge.badgeId}"
+                        title="Código de barras ${badge.badgeId}"
+                        style="display:block"
+                        width="400"
+                        height="120"
+                        border="0"
+                      />
                     </td>
                   </tr>
                   
