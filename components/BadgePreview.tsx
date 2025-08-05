@@ -15,6 +15,7 @@ interface BadgePreviewProps {
     name: string
     department: string
     email: string
+    phone?: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
     companion?: string
@@ -27,6 +28,7 @@ interface BadgePreviewProps {
     name: string
     department: string
     email: string
+    phone?: string
     type: 'Badge' | 'Multiday Badge'
     days: number[]
     companion?: string
@@ -382,6 +384,7 @@ export default function BadgePreview({ badge, onClose, onEdit }: BadgePreviewPro
                     name: badge.name,
                     department: badge.department,
                     email: badge.email,
+                    phone: badge.phone,
                     type: badge.type,
                     days: badge.days,
                     companion: badge.companion
