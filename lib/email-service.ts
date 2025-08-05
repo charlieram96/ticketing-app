@@ -152,18 +152,19 @@ export class EmailService {
     PLAIN‑TEXT MIME PART  (improves deliverability)
   ─────────────────────────────────────────────────────────*/
   private createPlainText(badge: BadgeEmailData): string {
+    const validDaysText = this.formatValidDays(badge)
+    
     return [
       `Hola ${badge.name},`,
       '',
       'Nos complace informarte que has sido invitado a asistir a nuestra tarde de esparcimiento para la Asamblea Especial de Fort Lauderdale 2025!',
       '',
       `Tu código de entrada: ${badge.badgeId}`,
-      `Tipo: ${badge.type}`,
-      badge.type === 'Multiday Badge'
-        ? `Válido para días: ${badge.days.join(', ')}`
-        : 'Válido para todos los días del evento',
       '',
-      'Detalles del Evento:',
+      'VALIDEZ DE TU ENTRADA:',
+      validDaysText,
+      '',
+      'DETALLES DEL EVENTO:',
       'Fecha: Martes, Agosto 12, 2025',
       'Hora: 9am - 2pm',
       'Ubicación: West Palm Beach Christian Convention Center of Jehovah\'s Witnesses',
@@ -176,12 +177,27 @@ export class EmailService {
   }
 
   /*─────────────────────────────────────────────────────────
+    FORMAT VALID DAYS TEXT
+  ─────────────────────────────────────────────────────────*/
+  private formatValidDays(badge: BadgeEmailData): string {
+    if (badge.type === 'Badge') {
+      return 'Tu entrada es válida para todos los días del evento'
+    } else if (badge.days.length === 1) {
+      return `Tu entrada es válida para el Día ${badge.days[0]} únicamente`
+    } else if (badge.days.length === 2) {
+      return `Tu entrada es válida para los Días ${badge.days[0]} y ${badge.days[1]}`
+    } else {
+      const daysCopy = [...badge.days] // Don't mutate original array
+      const lastDay = daysCopy.pop()
+      return `Tu entrada es válida para los Días ${daysCopy.join(', ')} y ${lastDay}`
+    }
+  }
+
+  /*─────────────────────────────────────────────────────────
     HTML MIME PART
   ─────────────────────────────────────────────────────────*/
   private async createEmailTemplate(badge: BadgeEmailData, barcodeUrl: string): Promise<string> {
-    const validDaysText = badge.type === 'Multiday Badge'
-      ? `Valid for days: ${badge.days.join(', ')}`
-      : 'Valid for all event days'
+    const validDaysText = this.formatValidDays(badge)
 
     return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
             <html data-editor-version="2" class="sg-campaigns" xmlns="http://www.w3.org/1999/xhtml">
@@ -301,7 +317,7 @@ export class EmailService {
                                                     <td role="modules-container" style="padding:0px 0px 0px 0px; color:#000000; text-align:left;" bgcolor="#ffffff" width="100%" align="left"><table class="module preheader preheader-hide" role="module" data-type="preheader" border="0" cellpadding="0" cellspacing="0" width="100%" style="display: none !important; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">
                 <tr>
                   <td role="module-content">
-                    <p>Tu entrada para el evento Fort Lauderdale 2025 - ${badge.badgeId}</p>
+                    <p>Tu entrada Fort Lauderdale 2025 - ${badge.badgeId} - ${validDaysText}</p>
                   </td>
                 </tr>
               </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7657ff89-b997-4619-aff2-72eeece02494" data-mc-module-version="2019-10-22">
@@ -344,7 +360,9 @@ export class EmailService {
                   <tr>
                     <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Hola ${badge.name},
                         <br><br>
-                        Nos complace informarte que has sido invitado a asistir a nuestra tarde de esparcimiento para la Asamblea Especial de Fort Lauderdale 2025! A continuación tendrás tu código de barras único que servirá como tu tiquete de entrada.</span></div><div></div></div></td>
+                        Nos complace informarte que has sido invitado a asistir a nuestra tarde de esparcimiento para la Asamblea Especial de Fort Lauderdale 2025! A continuación tendrás tu código de barras único que servirá como tu tiquete de entrada.
+                        <br><br>
+                        <strong style="color: #0088ad; font-size: 18px; background-color: #f0f8ff; padding: 8px 12px; border-radius: 4px; display: inline-block;">${validDaysText}</strong></span></div><div></div></div></td>
                   </tr>
                 </tbody>
               </table><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="3757586a-ce69-48ba-bd9a-0c0b7937a616">
@@ -361,7 +379,11 @@ export class EmailService {
                   <tbody>
                     <tr>
                     <td style="padding:18px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">
-                    Date: Martes, Agosto 12, 2025
+                    <strong style="color: #0088ad;">VALIDEZ DE TU ENTRADA:</strong><br>
+                    ${validDaysText}
+                    <br><br>
+                    <strong style="color: #0088ad;">DETALLES DEL EVENTO:</strong><br>
+                    Fecha: Martes, Agosto 12, 2025
                     <br>
                     Ubicación: West Palm Beach Christian Convention Center of Jehovah's Witnesses
                     <br>
