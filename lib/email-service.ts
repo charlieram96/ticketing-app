@@ -1,6 +1,7 @@
 import sgMail from '@sendgrid/mail'
 import JsBarcode from 'jsbarcode'
 import { createCanvas } from 'canvas'
+import AWS from 'aws-sdk'
 
 // ───────────────────────────────────────────────────────────
 //  INITIALISE SENDGRID
@@ -9,6 +10,17 @@ if (!process.env.SENDGRID_API_KEY) {
   throw new Error('SENDGRID_API_KEY env‑var is missing')
 }
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+
+// ───────────────────────────────────────────────────────────
+//  INITIALISE AWS S3
+// ───────────────────────────────────────────────────────────
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+})
+
+const s3 = new AWS.S3()
 
 // ───────────────────────────────────────────────────────────
 //  TYPES
@@ -28,6 +40,22 @@ export interface BadgeEmailData {
 }
 
 // ───────────────────────────────────────────────────────────
+//  HELPER FUNCTIONS
+// ───────────────────────────────────────────────────────────
+async function uploadBarcodeToS3(badgeId: string, barcodeBuffer: Buffer): Promise<string> {
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME!, // Your S3 bucket name
+    Key: `barcodes/${badgeId}.png`, // File path in the bucket
+    Body: barcodeBuffer,
+    ContentType: 'image/png',
+    ACL: 'public-read', // Make the file publicly readable
+  }
+
+  const uploadResult = await s3.upload(params).promise()
+  return uploadResult.Location // Return the URL of the uploaded barcode
+}
+
+// ───────────────────────────────────────────────────────────
 //  SERVICE
 // ───────────────────────────────────────────────────────────
 export class EmailService {
@@ -35,12 +63,12 @@ export class EmailService {
   private fromName: string
 
   constructor() {
-    this.fromEmail = process.env.FROM_EMAIL || 'flscticket@gmail.com'
-    this.fromName  = process.env.FROM_NAME  || 'Todo Nuevo Tickets'
+    this.fromEmail = process.env.FROM_EMAIL || 'ticketing@fll2025.com'
+    this.fromName  = process.env.FROM_NAME  || 'FLL 2025 Ticketing'
   }
 
   /*─────────────────────────────────────────────────────────
-    GENERATE BARCODE  (server‑side Canvas → base‑64)
+    GENERATE BARCODE AND UPLOAD TO S3
   ─────────────────────────────────────────────────────────*/
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
     try {
@@ -68,28 +96,41 @@ export class EmailService {
       // Draw barcode onto main canvas
       ctx.drawImage(tempCanvas, 0, 0)
       
-      // Convert canvas to PNG base64 (without data URI prefix)
+      // Convert canvas to PNG buffer
       const buffer = canvas.toBuffer('image/png')
-      return buffer.toString('base64')
+      
+      // Upload to S3 and return URL
+      const s3Url = await uploadBarcodeToS3(badgeId, buffer)
+      return s3Url
     } catch (error) {
-      console.error('Error generating barcode:', error)
-      // Fallback to simple text-based image
-      const canvas = createCanvas(400, 120)
-      const ctx = canvas.getContext('2d')
+      console.error('Error generating/uploading barcode:', error)
       
-      ctx.fillStyle = 'white'
-      ctx.fillRect(0, 0, 400, 120)
-      ctx.strokeStyle = 'black'
-      ctx.lineWidth = 2
-      ctx.strokeRect(0, 0, 400, 120)
-      
-      ctx.fillStyle = 'black'
-      ctx.font = 'bold 24px monospace'
-      ctx.textAlign = 'center'
-      ctx.fillText(badgeId, 200, 70)
-      
-      const buffer = canvas.toBuffer('image/png')
-      return buffer.toString('base64')
+      try {
+        // Fallback to simple text-based image
+        const canvas = createCanvas(400, 120)
+        const ctx = canvas.getContext('2d')
+        
+        ctx.fillStyle = 'white'
+        ctx.fillRect(0, 0, 400, 120)
+        ctx.strokeStyle = 'black'
+        ctx.lineWidth = 2
+        ctx.strokeRect(0, 0, 400, 120)
+        
+        ctx.fillStyle = 'black'
+        ctx.font = 'bold 24px monospace'
+        ctx.textAlign = 'center'
+        ctx.fillText(badgeId, 200, 70)
+        
+        const buffer = canvas.toBuffer('image/png')
+        
+        // Upload fallback image to S3
+        const s3Url = await uploadBarcodeToS3(badgeId, buffer)
+        return s3Url
+      } catch (fallbackError) {
+        console.error('Error uploading fallback barcode:', fallbackError)
+        // Return a placeholder image URL as last resort
+        return 'https://via.placeholder.com/400x120.png?text=' + encodeURIComponent(badgeId)
+      }
     }
   }
 
@@ -98,24 +139,32 @@ export class EmailService {
   ─────────────────────────────────────────────────────────*/
   private createPlainText(badge: BadgeEmailData): string {
     return [
-      `Hello ${badge.name},`,
+      `Hola ${badge.name},`,
       '',
-      `Your event badge (${badge.badgeId}) is ready.`,
-      `Type: ${badge.type}`,
+      'Nos complace informarte que has sido invitado a asistir a nuestra tarde de esparcimiento para la Asamblea Especial de Fort Lauderdale 2025!',
+      '',
+      `Tu código de entrada: ${badge.badgeId}`,
+      `Tipo: ${badge.type}`,
       badge.type === 'Multiday Badge'
-        ? `Valid for days: ${badge.days.join(', ')}`
-        : 'Valid for all event days',
+        ? `Válido para días: ${badge.days.join(', ')}`
+        : 'Válido para todos los días del evento',
       '',
-      'Present the barcode below (or this email) at check‑in.',
+      'Detalles del Evento:',
+      'Fecha: Martes, Agosto 12, 2025',
+      'Hora: 9am - 2pm',
+      'Ubicación: West Palm Beach Christian Convention Center of Jehovah\'s Witnesses',
+      'Dirección: 1610 Palm Beach Lakes Blvd, West Palm Beach, FL 33401',
       '',
-      '— Event Support'
+      'Por favor presenta este correo electrónico con el código de barras en la entrada.',
+      '',
+      '— Fort Lauderdale 2025'
     ].join('\n')
   }
 
   /*─────────────────────────────────────────────────────────
     HTML MIME PART
   ─────────────────────────────────────────────────────────*/
-  private createEmailTemplate(badge: BadgeEmailData): string {
+  private async createEmailTemplate(badge: BadgeEmailData, barcodeUrl: string): Promise<string> {
     const validDaysText = badge.type === 'Multiday Badge'
       ? `Valid for days: ${badge.days.join(', ')}`
       : 'Valid for all event days'
@@ -238,7 +287,7 @@ export class EmailService {
                                                     <td role="modules-container" style="padding:0px 0px 0px 0px; color:#000000; text-align:left;" bgcolor="#ffffff" width="100%" align="left"><table class="module preheader preheader-hide" role="module" data-type="preheader" border="0" cellpadding="0" cellspacing="0" width="100%" style="display: none !important; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">
                 <tr>
                   <td role="module-content">
-                    <p></p>
+                    <p>Tu entrada</p>
                   </td>
                 </tr>
               </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7657ff89-b997-4619-aff2-72eeece02494" data-mc-module-version="2019-10-22">
@@ -281,7 +330,7 @@ export class EmailService {
                   <tr>
                     <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Hola ${badge.name},
                         <br><br>
-                        Nos complace informarte que has sido invitado a asistir a nuestra tarde de esparcimiento para la Asamblea Especial de Fort Lauderdale 2025! A continuación tendrás tu código QR único que servirá como tu tiquete de entrada.</span></div><div></div></div></td>
+                        Nos complace informarte que has sido invitado a asistir a nuestra tarde de esparcimiento para la Asamblea Especial de Fort Lauderdale 2025! A continuación tendrás tu código de barras único que servirá como tu tiquete de entrada.</span></div><div></div></div></td>
                   </tr>
                 </tbody>
               </table><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="3757586a-ce69-48ba-bd9a-0c0b7937a616">
@@ -307,6 +356,12 @@ export class EmailService {
                     Hora: 9am - 2pm
                     </td>
                   </tr>
+                  <tr>
+                    <td style="font-size:6px; line-height:10px; padding:0px 0px 100px 0px;" valign="top" align="center">
+                      <img border="0" style="display:block; width: min(90%, 400px); color:#000000; text-decoration:none; font-family:Helvetica, arial, sans-serif; font-size:16px; max-width:90% !important; height:auto !important;" width="400" alt="Barcode ${badge.badgeId}" data-proportionally-constrained="true" data-responsive="true" src="${barcodeUrl}">
+                    </td>
+                  </tr>
+                  
                 </tr>
                 </tbody>
                 </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:30px 20px 0px 20px;" bgcolor="#ffffff" data-distribution="1">
@@ -429,33 +484,31 @@ export class EmailService {
     }
 
     try {
-      // ─── 1. create barcode ─────────────────────────────
-      const base64 = await this.generateBarcodeImageServer(badge.badgeId)
+      // ─── 1. Generate barcode and upload to S3 ────────
+      const barcodeUrl = await this.generateBarcodeImageServer(badge.badgeId)
+      
+      // ─── 2. Generate HTML with S3 barcode URL ────────
+      const htmlContent = await this.createEmailTemplate(badge, barcodeUrl)
 
-      // ─── 2. build message object ───────────────────────
+      // ─── 3. build message object ───────────────────────
+      // Note: For better deliverability, ensure your domain has proper SPF, DKIM, and DMARC records configured
       const msg = {
         to: badge.email,
-        cc: 'flscticket@gmail.com',
+        bcc: 'ticketing@fll2025.com',
         from: { email:this.fromEmail, name:this.fromName },
-        reply_to: { email:'support@example.com' },
-        subject: `Your Event Badge – ${badge.badgeId}`,
+        reply_to: { email: 'ticketing@fll2025.com' }, // Use legitimate email
+        subject: `Fort Lauderdale 2025`, // More specific subject
         text: this.createPlainText(badge),
-        html: this.createEmailTemplate(badge),
-        attachments: [
-          {
-            content: base64,
-            filename: `badge-${badge.badgeId}.png`,
-            type: 'image/png',
-            disposition: 'inline',
-            content_id: 'barcode'
-          }
-        ],
+        html: htmlContent,
+        // No attachments needed since barcode is hosted on S3
         headers: {
-          'List-Unsubscribe': '<mailto:unsubscribe@example.com>',
+          'List-Unsubscribe': '<mailto:ticketing@fll2025.com?subject=Unsubscribe>',
+          'X-Priority': '3', // Normal priority
+          'X-Mailer': 'Fort Lauderdale 2025 Event System',
         },
       }
 
-      // ─── 3. send ───────────────────────────────────────
+      // ─── 4. send ───────────────────────────────────────
       await sgMail.send(msg)
       return { success:true, email:badge.email }
 
