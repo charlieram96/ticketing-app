@@ -528,7 +528,7 @@ export class EmailService {
         headers: {
           'X-Priority': '3', // Normal priority
           'X-Mailer': 'Fort Lauderdale 2025 Event System',
-          'Content-Type': 'text/html; charset=UTF-8',
+          // Don't set Content-Type here - SendGrid handles it automatically
         },
       }
 
