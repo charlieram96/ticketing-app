@@ -87,7 +87,7 @@ export class EmailService {
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
     try {
       // Create canvas with same dimensions as BadgePreview
-      const canvas  = createCanvas(400, 120);
+      const canvas  = createCanvas(1142, 124);
       const ctx = canvas.getContext('2d')
       
       // Fill white background
@@ -95,11 +95,11 @@ export class EmailService {
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       
       // Generate barcode on temporary canvas
-      const tempCanvas = createCanvas(400, 120)
+      const tempCanvas = createCanvas(1142, 124)
       JsBarcode(tempCanvas, badgeId, {
         format: 'CODE128',
         width: 10,
-        height: 120,
+        height: 124,
         displayValue: false,
         background: '#ffffff',
         lineColor: '#000000',
@@ -121,14 +121,14 @@ export class EmailService {
       
       try {
         // Fallback to simple text-based image
-        const canvas = createCanvas(400, 120)
+        const canvas = createCanvas(1142, 124)
         const ctx = canvas.getContext('2d')
         
         ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, 400, 120)
+        ctx.fillRect(0, 0, 1142, 124)
         ctx.strokeStyle = 'black'
         ctx.lineWidth = 2
-        ctx.strokeRect(0, 0, 400, 120)
+        ctx.strokeRect(0, 0, 1142, 124)
         
         ctx.fillStyle = 'black'
         ctx.font = 'bold 24px monospace'
