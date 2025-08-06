@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     marginRight: 0,
     position: 'relative',
-  },
+  }, 
   delegateTicketImage: {
     position: 'absolute',
     top: 108,
