@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
           badgeId: badge.badgeId,
           name: badge.name,
           email: badge.email,
+          department: badge.department,
           type: badge.type,
           days: badge.days
         })

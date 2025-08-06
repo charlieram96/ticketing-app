@@ -35,6 +35,7 @@ export interface BadgeEmailData {
   badgeId: string
   name: string
   email: string
+  department: string
   type: 'Badge' | 'Multiday Badge'
   days: number[]
 }
@@ -86,65 +87,56 @@ export class EmailService {
   ─────────────────────────────────────────────────────────*/
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
     try {
-      // Create canvas with proper dimensions for barcode
-      const canvas  = createCanvas(800, 120);
-      const ctx = canvas.getContext('2d')
-      
-      // Fill white background
-      ctx.fillStyle = 'white'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      
-      // Generate barcode on temporary canvas
-      const tempCanvas = createCanvas(800, 120)
-      JsBarcode(tempCanvas, badgeId, {
-        format: 'CODE128',
-        width: 3,
-        height: 90,
+      // ── 1.  Dimensions ───────────────────────────────
+      const OUT_W = 600;                   // displayed width  (px)
+      const OUT_H = Math.round(OUT_W / 9.2); // 65 px – height = width/9.2
+      const SCALE = 2;                     // render @2× for Retina
+  
+      // ── 2.  Create hi-res canvas ─────────────────────
+      const canvas = createCanvas(OUT_W * SCALE, OUT_H * SCALE);
+      const ctx    = canvas.getContext('2d');
+  
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+      // ── 3.  Render barcode directly on that canvas ───
+      JsBarcode(canvas, badgeId, {
+        format:       'CODE128',
+        width:        2 * SCALE,          // module 2 px @1×
+        height:       OUT_H * SCALE,
+        margin:       0,
         displayValue: false,
-        background: '#ffffff',
-        lineColor: '#000000',
-        margin: 30,
-        flat: false
-      })
-      
-      // Draw barcode onto main canvas
-      ctx.drawImage(tempCanvas, 0, 0)
-      
-      // Convert canvas to PNG buffer
-      const buffer = canvas.toBuffer('image/png')
-      
-      // Upload to S3 and return URL
-      const s3Url = await uploadBarcodeToS3(badgeId, buffer)
-      return s3Url
-    } catch (error) {
-      console.error('Error generating/uploading barcode:', error)
-      
-      try {
-        // Fallback to simple text-based image
-        const canvas = createCanvas(800, 120)
-        const ctx = canvas.getContext('2d')
-        
-        ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, 800, 120)
-        ctx.strokeStyle = 'black'
-        ctx.lineWidth = 2
-        ctx.strokeRect(0, 0, 800, 120)
-        
-        ctx.fillStyle = 'black'
-        ctx.font = 'bold 24px monospace'
-        ctx.textAlign = 'center'
-        ctx.fillText(badgeId, 400, 70)
-        
-        const buffer = canvas.toBuffer('image/png')
-        
-        // Upload fallback image to S3
-        const s3Url = await uploadBarcodeToS3(badgeId, buffer)
-        return s3Url
-      } catch (fallbackError) {
-        console.error('Error uploading fallback barcode:', fallbackError)
-        // Return a placeholder image URL as last resort
-        return 'https://via.placeholder.com/400x120.png?text=' + encodeURIComponent(badgeId)
-      }
+        flat:         true
+      });
+  
+      // ── 4.  Encode PNG & upload ──────────────────────
+      const png = canvas.toBuffer('image/png');
+      return await uploadBarcodeToS3(badgeId, png);
+  
+    } catch (err) {
+      console.error('Barcode generation failed, using fallback:', err);
+  
+      // ── 5.  Fallback: plain text inside a frame ──────
+      const fallbackW = 600;
+      const fallbackH = Math.round(fallbackW / 9.2);
+      const fbCanvas  = createCanvas(fallbackW, fallbackH);
+      const fbCtx     = fbCanvas.getContext('2d');
+  
+      fbCtx.fillStyle = '#FFFFFF';
+      fbCtx.fillRect(0, 0, fallbackW, fallbackH);
+  
+      fbCtx.strokeStyle = '#000000';
+      fbCtx.lineWidth   = 2;
+      fbCtx.strokeRect(0, 0, fallbackW, fallbackH);
+  
+      fbCtx.fillStyle   = '#000000';
+      fbCtx.font        = 'bold 24px monospace';
+      fbCtx.textAlign   = 'center';
+      fbCtx.textBaseline= 'middle';
+      fbCtx.fillText(badgeId, fallbackW / 2, fallbackH / 2);
+  
+      const png = fbCanvas.toBuffer('image/png');
+      return await uploadBarcodeToS3(badgeId, png);
     }
   }
 
@@ -177,6 +169,20 @@ export class EmailService {
   }
 
   /*─────────────────────────────────────────────────────────
+    GET DAY NAME WITH DATE
+  ─────────────────────────────────────────────────────────*/
+  private getDayWithDate(dayNumber: number): string {
+    const dayMap: { [key: number]: string } = {
+      1: 'Viernes 8 de Agosto',
+      2: 'Sábado 9 de Agosto',
+      3: 'Martes 12 de Agosto',
+      4: 'Miércoles 13 de Agosto',
+      5: 'Lunes 18 de Agosto'
+    }
+    return dayMap[dayNumber] || `Día ${dayNumber}`
+  }
+
+  /*─────────────────────────────────────────────────────────
     FORMAT VALID DAYS TEXT
   ─────────────────────────────────────────────────────────*/
   private formatValidDays(badge: BadgeEmailData): string {
@@ -190,6 +196,25 @@ export class EmailService {
       const daysCopy = [...badge.days] // Don't mutate original array
       const lastDay = daysCopy.pop()
       return `Tu entrada es válida para los Días ${daysCopy.join(', ')} y ${lastDay}`
+    }
+  }
+
+  /*─────────────────────────────────────────────────────────
+    FORMAT VALID DAYS WITH DATES
+  ─────────────────────────────────────────────────────────*/
+  private formatValidDaysWithDates(badge: BadgeEmailData): string {
+    if (badge.type === 'Badge') {
+      return `<strong>Todos los días del evento:</strong><br>
+        • Día 1 - Viernes 8 de Agosto<br>
+        • Día 2 - Sábado 9 de Agosto<br>
+        • Día 3 - Martes 12 de Agosto<br>
+        • Día 4 - Miércoles 13 de Agosto<br>
+        • Día 5 - Lunes 18 de Agosto`
+    } else {
+      const daysHtml = badge.days.map(day => 
+        `• Día ${day} - ${this.getDayWithDate(day)}`
+      ).join('<br>')
+      return `<strong>Días válidos:</strong><br>${daysHtml}`
     }
   }
 
@@ -371,6 +396,9 @@ export class EmailService {
                         <br><br>
                         Nos complace informarte que has sido invitado a asistir a nuestra tarde de esparcimiento para la Asamblea Especial de Fort Lauderdale 2025! A continuación tendrás tu código de barras único que servirá como tu tiquete de entrada.
                         <br><br>
+                        <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                          <strong style="color: #0088ad; font-size: 16px;">Departamento:</strong> <span style="color: #273159; font-size: 16px;">${badge.department}</span>
+                        </div>
                         <strong style="color: #0088ad; font-size: 18px; background-color: #f0f8ff; padding: 8px 12px; border-radius: 4px; display: inline-block;">${validDaysText}</strong></span></div><div></div></div></td>
                   </tr>
                 </tbody>
@@ -388,28 +416,24 @@ export class EmailService {
                   <tbody>
                     <tr>
                     <td style="padding:18px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">
-                    <strong style="color: #0088ad;">VALIDEZ DE TU ENTRADA:</strong><br>
-                    ${validDaysText}
-                    <br><br>
-                    <strong style="color: #0088ad;">DETALLES DEL EVENTO:</strong><br>
-                    Fecha: Martes, Agosto 12, 2025
-                    <br>
-                    Ubicación: West Palm Beach Christian Convention Center of Jehovah's Witnesses
-                    <br>
-                    Dirección: 1610 Palm Beach Lakes Blvd, West Palm Beach, FL 33401
-                    <br>
+                    <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                      <strong style="color: #0088ad; font-size: 18px;">VALIDEZ DE TU ENTRADA:</strong><br><br>
+                      <span style="font-size: 15px; line-height: 24px;">${this.formatValidDaysWithDates(badge)}</span>
+                    </div>
+                    <strong style="color: #0088ad;">UBICACIÓN DEL EVENTO:</strong><br>
+                    West Palm Beach Christian Convention Center of Jehovah's Witnesses<br>
+                    Dirección: 1610 Palm Beach Lakes Blvd, West Palm Beach, FL 33401<br>
                     Hora: 9am - 2pm
                     </td>
                   </tr>
                   <tr>
                     <td style="padding:20px 20px 60px 20px;" valign="top" align="center">
                       <div style="background-color:#f8f8f8; padding:20px; border-radius:8px; display:inline-block;">
-                        <img 
+                        <img
                           src="${barcodeUrl}"
                           alt="Código de barras ${badge.badgeId}"
-                          title="Código de barras ${badge.badgeId}"
-                          style="display:block; width:100%; max-width:600px; height:auto;"
-                          border="0"
+                          width="600" height="65"
+                          style="display:block;width:600px;height:65px;border:0;"
                         />
                         <div style="text-align:center; margin-top:10px; font-family:monospace; font-size:14px; color:#333;">
                           ${badge.badgeId}
