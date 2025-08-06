@@ -87,7 +87,7 @@ export class EmailService {
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
     try {
       // Create canvas with same dimensions as BadgePreview
-      const canvas  = createCanvas(1142, 124);
+      const canvas  = createCanvas(737, 80);
       const ctx = canvas.getContext('2d')
       
       // Fill white background
@@ -95,11 +95,11 @@ export class EmailService {
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       
       // Generate barcode on temporary canvas
-      const tempCanvas = createCanvas(1142, 124)
+      const tempCanvas = createCanvas(737, 80)
       JsBarcode(tempCanvas, badgeId, {
         format: 'CODE128',
         width: 10,
-        height: 124,
+        height: 80,
         displayValue: false,
         background: '#ffffff',
         lineColor: '#000000',
@@ -121,19 +121,19 @@ export class EmailService {
       
       try {
         // Fallback to simple text-based image
-        const canvas = createCanvas(1142, 124)
+        const canvas = createCanvas(737, 80)
         const ctx = canvas.getContext('2d')
         
         ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, 1142, 124)
+        ctx.fillRect(0, 0, 737, 80)
         ctx.strokeStyle = 'black'
         ctx.lineWidth = 2
-        ctx.strokeRect(0, 0, 1142, 124)
+        ctx.strokeRect(0, 0, 737, 80)
         
         ctx.fillStyle = 'black'
         ctx.font = 'bold 24px monospace'
         ctx.textAlign = 'center'
-        ctx.fillText(badgeId, 200, 70)
+        ctx.fillText(badgeId, 737, 80)
         
         const buffer = canvas.toBuffer('image/png')
         
@@ -399,8 +399,8 @@ export class EmailService {
                         alt="Código de barras ${badge.badgeId}"
                         title="Código de barras ${badge.badgeId}"
                         style="display:block"
-                        width="400"
-                        height="120"
+                        width="737"
+                        height="80"
                         border="0"
                       />
                     </td>
