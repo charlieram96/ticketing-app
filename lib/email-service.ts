@@ -189,13 +189,14 @@ export class EmailService {
     if (badge.type === 'Badge') {
       return 'Tu entrada es válida para todos los días del evento'
     } else if (badge.days.length === 1) {
-      return `Tu entrada es válida para el Día ${badge.days[0]} únicamente`
+      return `Tu entrada es válida para ${this.getDayWithDate(badge.days[0])} únicamente`
     } else if (badge.days.length === 2) {
-      return `Tu entrada es válida para los Días ${badge.days[0]} y ${badge.days[1]}`
+      return `Tu entrada es válida para ${this.getDayWithDate(badge.days[0])} y ${this.getDayWithDate(badge.days[1])}`
     } else {
       const daysCopy = [...badge.days] // Don't mutate original array
       const lastDay = daysCopy.pop()
-      return `Tu entrada es válida para los Días ${daysCopy.join(', ')} y ${lastDay}`
+      const daysWithDates = daysCopy.map(day => this.getDayWithDate(day))
+      return `Tu entrada es válida para ${daysWithDates.join(', ')} y ${this.getDayWithDate(lastDay!)}`
     }
   }
 
@@ -205,14 +206,14 @@ export class EmailService {
   private formatValidDaysWithDates(badge: BadgeEmailData): string {
     if (badge.type === 'Badge') {
       return `<strong>Todos los días del evento:</strong><br>
-        • Día 1 - Viernes 8 de Agosto<br>
-        • Día 2 - Sábado 9 de Agosto<br>
-        • Día 3 - Martes 12 de Agosto<br>
-        • Día 4 - Miércoles 13 de Agosto<br>
-        • Día 5 - Lunes 18 de Agosto`
+        • Viernes 8 de Agosto<br>
+        • Sábado 9 de Agosto<br>
+        • Martes 12 de Agosto<br>
+        • Miércoles 13 de Agosto<br>
+        • Lunes 18 de Agosto`
     } else {
       const daysHtml = badge.days.map(day => 
-        `• Día ${day} - ${this.getDayWithDate(day)}`
+        `• ${this.getDayWithDate(day)}`
       ).join('<br>')
       return `<strong>Días válidos:</strong><br>${daysHtml}`
     }
@@ -397,7 +398,7 @@ export class EmailService {
                         En este mensaje encontrarás tu código de barras personalizado, el cual será tu pase de acceso a la Tarde de Esparcimiento de la Asamblea Especial de Fort Lauderdale 2025, “Todo Nuevo”. Al llegar, la entrada disponible será la que se encuentra por Congress Avenue. Por favor verifica que los días indicados más abajo sean los correctos; de lo contrario, no podremos admitirte.
                         <br><br>
                         <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                          <strong style="color: #0088ad; font-size: 16px;">Departamento:</strong> <span style="color: #273159; font-size: 16px;">${badge.department}</span>
+                          <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Departamento:</strong> <span style="color: #273159; font-size: 16px;">${badge.department}</span>
                         </div>
                         <strong style="color: #0088ad; font-size: 18px; background-color: #f0f8ff; padding: 8px 12px; border-radius: 4px; display: inline-block;">${validDaysText}</strong></span></div><div></div></div></td>
                   </tr>
@@ -407,10 +408,10 @@ export class EmailService {
                     <tr>
                     <td style="padding:18px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">
                     <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                      <strong style="color: #0088ad; font-size: 18px;">VALIDEZ DE TU ENTRADA:</strong><br><br>
+                      <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">VALIDEZ DE TU ENTRADA:</strong><br><br>
                       <span style="font-size: 15px; line-height: 24px;">${this.formatValidDaysWithDates(badge)}</span>
                     </div>
-                    <strong style="color: #0088ad;">UBICACIÓN DEL EVENTO:</strong><br>
+                    <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">UBICACIÓN DEL EVENTO:</strong><br>
                     West Palm Beach Christian Convention Center of Jehovah's Witnesses<br>
                     Dirección: 1610 Palm Beach Lakes Blvd, West Palm Beach, FL 33401<br>
                     Hora: 9am - 2pm
