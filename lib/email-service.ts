@@ -86,8 +86,8 @@ export class EmailService {
   ─────────────────────────────────────────────────────────*/
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
     try {
-      // Create canvas with same dimensions as BadgePreview
-      const canvas  = createCanvas(737, 80);
+      // Create canvas with proper dimensions for barcode
+      const canvas  = createCanvas(600, 100);
       const ctx = canvas.getContext('2d')
       
       // Fill white background
@@ -95,15 +95,15 @@ export class EmailService {
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       
       // Generate barcode on temporary canvas
-      const tempCanvas = createCanvas(737, 80)
+      const tempCanvas = createCanvas(600, 100)
       JsBarcode(tempCanvas, badgeId, {
         format: 'CODE128',
-        width: 10,
+        width: 4,
         height: 80,
         displayValue: false,
         background: '#ffffff',
         lineColor: '#000000',
-        margin: 10,
+        margin: 20,
         flat: false
       })
       
@@ -121,19 +121,19 @@ export class EmailService {
       
       try {
         // Fallback to simple text-based image
-        const canvas = createCanvas(737, 80)
+        const canvas = createCanvas(600, 100)
         const ctx = canvas.getContext('2d')
         
         ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, 737, 80)
+        ctx.fillRect(0, 0, 600, 100)
         ctx.strokeStyle = 'black'
         ctx.lineWidth = 2
-        ctx.strokeRect(0, 0, 737, 80)
+        ctx.strokeRect(0, 0, 600, 100)
         
         ctx.fillStyle = 'black'
         ctx.font = 'bold 24px monospace'
         ctx.textAlign = 'center'
-        ctx.fillText(badgeId, 737, 80)
+        ctx.fillText(badgeId, 300, 60)
         
         const buffer = canvas.toBuffer('image/png')
         
@@ -343,8 +343,17 @@ export class EmailService {
               </table><table class="wrapper" role="module" data-type="image" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7bf3c8d1-3ee5-43af-91f2-1ef67b1f878c">
                 <tbody>
                   <tr>
-                    <td style="font-size:6px; line-height:10px; padding:0px 0px 0px 0px;" valign="top" align="center">
-                      <img border="0" style="display:block; width: min(90%, 250px); color:#000000; text-decoration:none; font-family:Helvetica, arial, sans-serif; font-size:16px; max-width:50% !important; height:auto !important;" width="250" alt="" data-proportionally-constrained="true" data-responsive="true" src="https://lessthan7.studio/media/fort-lauderdale-2025-logo-final.png">
+                    <td style="padding:20px 0px;" align="center">
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
+                        <tr>
+                          <td width="50%" style="padding:0 10px;" valign="middle" align="center">
+                            <img border="0" style="display:block; max-width:100%; height:auto;" width="250" alt="Fort Lauderdale 2025" src="https://lessthan7.studio/media/fort-lauderdale-2025-logo-final.png">
+                          </td>
+                          <td width="50%" style="padding:0 10px;" valign="middle" align="center">
+                            <img border="0" style="display:block; max-width:100%; height:auto;" width="250" alt="Todo Nuevo" src="https://lessthan7.studio/media/todo-nuevo.png">
+                          </td>
+                        </tr>
+                      </table>
                     </td>
                   </tr>
                 </tbody>
@@ -398,9 +407,8 @@ export class EmailService {
                         src="${barcodeUrl}"
                         alt="Código de barras ${badge.badgeId}"
                         title="Código de barras ${badge.badgeId}"
-                        style="display:block; max-width:100%; height:auto;"
-                        width="400"
-                        height="43"
+                        style="display:block; max-width:100%; height:auto; margin: 0 auto;"
+                        width="500"
                         border="0"
                       />
                     </td>
