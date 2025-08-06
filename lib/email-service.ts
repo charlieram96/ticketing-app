@@ -393,28 +393,43 @@ export class EmailService {
               </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="f758d404-9b02-4e87-937f-cccaa46787a6" data-mc-module-version="2019-10-22">
                 <tbody>
                   <tr>
-                    <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Hola ${badge.name}!
+                    <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Estimado hermano ${badge.name},
                         <br><br>
-                        En este mensaje encontrarás tu código de barras personalizado, el cual será tu pase de acceso a la Tarde de Esparcimiento de la Asamblea Especial de Fort Lauderdale 2025, “Todo Nuevo”. Al llegar, la entrada disponible será la que se encuentra por Congress Avenue. Por favor verifica que los días indicados más abajo sean los correctos; de lo contrario, no podremos admitirte.
+                        En este mensaje le estamos enviando un código de barras que deberá ser escaneado para poder entrar a la Tarde de Esparcimiento como voluntario.
+                        <br><br>
+                        El evento se llevará a cabo en el Salon de Asamblea de West Palm Beach y la entrada será por Congress Avenue. 
+                        <br><br>
+                        Favor de verificar que la información y los días estén correctos. Si no lleva este código, se le podrá denegar la entrada. 
+                        <br><br>
+                        Muchas gracias por todo su duro trabajo a favor de los intereses del Reino. 
+                        <br><br>
+                        Sus hermanos,
+                        <br><br>
+                        Comite de Hospitalidad
+                        <br>
+                        Asamblea Especial
+                        <br>
+                        “Adoracion pura”
+                        <br>
+                        Fort Lauderdale, FL. 
                         <br><br>
                         <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
                           <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Departamento:</strong> <span style="color: #273159; font-size: 16px;">${badge.department}</span>
                         </div>
-                        <strong style="color: #0088ad; font-size: 18px; background-color: #f0f8ff; padding: 8px 12px; border-radius: 4px; display: inline-block;">${validDaysText}</strong></span></div><div></div></div></td>
+                        <strong style="color: #0088ad; font-size: 16px; background-color: #f0f8ff; padding: 8px 12px; border-radius: 4px; display: inline-block;">${validDaysText}</strong></span></div><div></div></div></td>
                   </tr>
                 </tbody>
               </table><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="3757586a-ce69-48ba-bd9a-0c0b7937a616">
                   <tbody>
                     <tr>
-                    <td style="padding:18px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">
+                    <td style="padding:18px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content">
                     <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                      <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">VALIDEZ DE TU ENTRADA:</strong><br><br>
-                      <span style="font-size: 15px; line-height: 24px;">${this.formatValidDaysWithDates(badge)}</span>
+                      <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Validez de su entrada:</strong><br><br>
+                      <span style="font-size: 16px; line-height: 24px;">${this.formatValidDaysWithDates(badge)}</span>
                     </div>
-                    <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">UBICACIÓN DEL EVENTO:</strong><br>
+                    <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Ubicación del evento:</strong><br>
                     West Palm Beach Christian Convention Center of Jehovah's Witnesses<br>
-                    Dirección: 1610 Palm Beach Lakes Blvd, West Palm Beach, FL 33401<br>
-                    Hora: 9am - 2pm
+                    Dirección: 1610 Palm Beach Lakes Blvd, West Palm Beach, FL 33401
                     </td>
                   </tr>
                   <tr>
