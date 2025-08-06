@@ -231,12 +231,12 @@ export default function Scanner({ onScanResult }: ScannerProps) {
             }
           }, 2000)
         }
-      } else if (scannedId.startsWith('BDG-') && mode === 'check-in') {
-        // Handle badge scanning in check-in mode
+      } else if (scannedId.startsWith('BDG-') && (mode === 'check-in' || mode === 'view')) {
+        // Handle badge scanning in check-in or view mode
         const requestBody: any = { 
-          action: 'check-in', 
+          action: mode === 'check-in' ? 'check-in' : 'view', 
           scanMode: mode,
-          selectedDay: parseInt(selectedDay.replace('day', ''))
+          selectedDay: mode === 'check-in' ? parseInt(selectedDay.replace('day', '')) : undefined
         }
         
         const response = await fetch(`/api/badges/${scannedId}`, {
@@ -252,7 +252,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
             ticketId: scannedId,
             status: 'unredeemed', // badges don't have status
             success: true,
-            message: 'Badge successfully checked in!',
+            message: mode === 'check-in' ? 'Badge successfully checked in!' : 'Badge details retrieved',
             details: data,
             isBadge: true,
           }
