@@ -87,7 +87,7 @@ export class EmailService {
   private async generateBarcodeImageServer(badgeId: string): Promise<string> {
     try {
       // Create canvas with proper dimensions for barcode
-      const canvas  = createCanvas(600, 100);
+      const canvas  = createCanvas(800, 120);
       const ctx = canvas.getContext('2d')
       
       // Fill white background
@@ -95,15 +95,15 @@ export class EmailService {
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       
       // Generate barcode on temporary canvas
-      const tempCanvas = createCanvas(600, 100)
+      const tempCanvas = createCanvas(800, 120)
       JsBarcode(tempCanvas, badgeId, {
         format: 'CODE128',
-        width: 4,
-        height: 80,
+        width: 3,
+        height: 90,
         displayValue: false,
         background: '#ffffff',
         lineColor: '#000000',
-        margin: 20,
+        margin: 30,
         flat: false
       })
       
@@ -121,19 +121,19 @@ export class EmailService {
       
       try {
         // Fallback to simple text-based image
-        const canvas = createCanvas(600, 100)
+        const canvas = createCanvas(800, 120)
         const ctx = canvas.getContext('2d')
         
         ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, 600, 100)
+        ctx.fillRect(0, 0, 800, 120)
         ctx.strokeStyle = 'black'
         ctx.lineWidth = 2
-        ctx.strokeRect(0, 0, 600, 100)
+        ctx.strokeRect(0, 0, 800, 120)
         
         ctx.fillStyle = 'black'
         ctx.font = 'bold 24px monospace'
         ctx.textAlign = 'center'
-        ctx.fillText(badgeId, 300, 60)
+        ctx.fillText(badgeId, 400, 70)
         
         const buffer = canvas.toBuffer('image/png')
         
@@ -402,15 +402,19 @@ export class EmailService {
                     </td>
                   </tr>
                   <tr>
-                    <td style="font-size:6px; line-height:10px; padding:0px 0px 100px 0px;" valign="top" align="center">
-                      <img 
-                        src="${barcodeUrl}"
-                        alt="Código de barras ${badge.badgeId}"
-                        title="Código de barras ${badge.badgeId}"
-                        style="display:block; max-width:100%; height:auto; margin: 0 auto;"
-                        width="500"
-                        border="0"
-                      />
+                    <td style="padding:20px 20px 60px 20px;" valign="top" align="center">
+                      <div style="background-color:#f8f8f8; padding:20px; border-radius:8px; display:inline-block;">
+                        <img 
+                          src="${barcodeUrl}"
+                          alt="Código de barras ${badge.badgeId}"
+                          title="Código de barras ${badge.badgeId}"
+                          style="display:block; width:100%; max-width:600px; height:auto;"
+                          border="0"
+                        />
+                        <div style="text-align:center; margin-top:10px; font-family:monospace; font-size:14px; color:#333;">
+                          ${badge.badgeId}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                   
