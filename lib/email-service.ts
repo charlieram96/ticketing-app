@@ -77,10 +77,12 @@ async function uploadBarcodeToS3(badgeId: string, barcodeBuffer: Buffer): Promis
 export class EmailService {
   private fromEmail: string
   private fromName: string
+  private bccEmail: string
 
   constructor() {
     this.fromEmail = process.env.FROM_EMAIL || 'ticketing@fll2025.com'
     this.fromName  = process.env.FROM_NAME  || 'FLL 2025 Ticketing'
+    this.bccEmail = process.env.BCC_EMAIL || 'charlie@fll2025.com'
   }
 
   /*─────────────────────────────────────────────────────────
@@ -584,7 +586,7 @@ export class EmailService {
       // Note: For better deliverability, ensure your domain has proper SPF, DKIM, and DMARC records configured
       const msg = {
         to: badge.email,
-        // Remove bcc to reduce spam score
+        bcc: this.bccEmail, // BCC charlie@fll2025.com for record keeping
         from: { email:this.fromEmail, name:this.fromName },
         replyTo: 'ticketing@fll2025.com', // Use replyTo instead of reply_to
         subject: `Tu entrada Fort Lauderdale 2025 - ${badge.badgeId}`, // More specific subject with badge ID

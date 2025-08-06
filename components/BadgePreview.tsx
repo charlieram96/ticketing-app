@@ -56,7 +56,7 @@ export default function BadgePreview({ badge, onClose, onEdit }: BadgePreviewPro
     
     const daysList = badge.days.map(day => getDayWithDate(day)).join(', ')
     
-    return `Estimado hermano(a) ${badge.name},
+    return `Estimado(a) hermano(a) ${badge.name},
 
 En este mensaje le estamos enviando un código de barras que deberá ser escaneado para poder entrar a la Tarde de Esparcimiento como voluntario. Asegurese de bajarlo y tenerlo guardado.
 
