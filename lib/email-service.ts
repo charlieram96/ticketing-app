@@ -392,9 +392,9 @@ export class EmailService {
               </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="f758d404-9b02-4e87-937f-cccaa46787a6" data-mc-module-version="2019-10-22">
                 <tbody>
                   <tr>
-                    <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Hola ${badge.name},
+                    <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Hola ${badge.name}!
                         <br><br>
-                        Nos complace informarte que has sido invitado a asistir a nuestra tarde de esparcimiento para la Asamblea Especial de Fort Lauderdale 2025! A continuación tendrás tu código de barras único que servirá como tu tiquete de entrada.
+                        En este mensaje encontrarás tu código de barras personalizado, el cual será tu pase de acceso a la Tarde de Esparcimiento de la Asamblea Especial de Fort Lauderdale 2025, “Todo Nuevo”. Al llegar, la entrada disponible será la que se encuentra por Congress Avenue. Por favor verifica que los días indicados más abajo sean los correctos; de lo contrario, no podremos admitirte.
                         <br><br>
                         <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
                           <strong style="color: #0088ad; font-size: 16px;">Departamento:</strong> <span style="color: #273159; font-size: 16px;">${badge.department}</span>
@@ -403,16 +403,6 @@ export class EmailService {
                   </tr>
                 </tbody>
               </table><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="3757586a-ce69-48ba-bd9a-0c0b7937a616">
-                  <tbody>
-                    <tr>
-                      <td align="center" bgcolor="" class="outer-td" style="padding:0px 0px 40px 0px;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="wrapper-mobile" style="text-align:center;">
-                          <tbody>
-                          </tbody>
-                        </table>
-                      </td>
-                    </tr>
-                  </tbody>
                   <tbody>
                     <tr>
                     <td style="padding:18px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">
@@ -428,12 +418,12 @@ export class EmailService {
                   </tr>
                   <tr>
                     <td style="padding:20px 20px 60px 20px;" valign="top" align="center">
-                      <div style="background-color:#f8f8f8; padding:20px; border-radius:8px; display:inline-block;">
+                      <div style="background-color:#f8f8f8; padding:20px; border-radius:8px; display:inline-block; max-width:100%;">
                         <img
                           src="${barcodeUrl}"
                           alt="Código de barras ${badge.badgeId}"
                           width="600" height="65"
-                          style="display:block;width:600px;height:65px;border:0;"
+                          style="display:block; width:100%; max-width:500px; height:auto; border:0; margin:0 auto;"
                         />
                         <div style="text-align:center; margin-top:10px; font-family:monospace; font-size:14px; color:#333;">
                           ${badge.badgeId}
