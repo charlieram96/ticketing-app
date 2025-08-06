@@ -25,6 +25,8 @@ interface ScanResultProps {
       badgeId?: string
       name?: string
       department?: string
+      email?: string
+      phone?: string
       type?: 'Badge' | 'Multiday Badge'
       days?: number[]
       companion?: string
@@ -200,6 +202,24 @@ export default function ScanResult({ result, onClose }: ScanResultProps) {
                     <span className="text-sm text-white/60">Department:</span>
                     <span className="text-sm text-white">
                       {result.details.department}
+                    </span>
+                  </div>
+                )}
+                
+                {result.isBadge && result.details.email && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Email:</span>
+                    <span className="text-sm text-white font-mono">
+                      {result.details.email}
+                    </span>
+                  </div>
+                )}
+                
+                {result.isBadge && result.details.phone && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Phone:</span>
+                    <span className="text-sm text-white font-mono">
+                      {result.details.phone}
                     </span>
                   </div>
                 )}

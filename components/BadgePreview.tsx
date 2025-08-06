@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { X, BadgeCheck, Clock, Calendar, Copy, Edit } from 'lucide-react'
+import { X, BadgeCheck, Clock, Calendar, Copy, Edit, MessageSquare, Check } from 'lucide-react'
 import JsBarcode from 'jsbarcode'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -36,6 +36,58 @@ interface BadgePreviewProps {
 }
 
 export default function BadgePreview({ badge, onClose, onEdit }: BadgePreviewProps) {
+  const [showMessageModal, setShowMessageModal] = useState(false)
+  const [copied, setCopied] = useState(false)
+  // Day mapping function
+  const getDayWithDate = (dayNumber: number): string => {
+    const dayMap: { [key: number]: string } = {
+      1: 'Viernes 8 de Agosto',
+      2: 'Sábado 9 de Agosto', 
+      3: 'Martes 12 de Agosto',
+      4: 'Miércoles 13 de Agosto',
+      5: 'Lunes 18 de Agosto'
+    }
+    return dayMap[dayNumber] || `Día ${dayNumber}`
+  }
+
+  // Generate text message
+  const generateTextMessage = (): string => {
+    if (!badge) return ''
+    
+    const daysList = badge.days.map(day => getDayWithDate(day)).join(', ')
+    
+    return `Estimado hermano(a) ${badge.name},
+
+En este mensaje le estamos enviando un código de barras que deberá ser escaneado para poder entrar a la Tarde de Esparcimiento como voluntario. Asegurese de bajarlo y tenerlo guardado.
+
+El evento se llevara a cabo en el Salon de Asamblea de West Palm Beach y la entrada sera por Congress Avenue.
+
+Favor de verificar que la información y los días están correctos. Si no lleva este código, se le podrá denegar la entrada.
+
+Sus días son:
+${daysList}
+
+Muchas gracias por todo su duro trabajo a favor de los intereses del Reino.
+
+Sus hermanos,
+
+Comite de Hospitalidad
+Asamblea Especial
+"Adoración Pura"
+Fort Lauderdale, FL.`
+  }
+
+  // Copy to clipboard function
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generateTextMessage())
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy text: ', err)
+    }
+  }
+
   const Barcode = ({ value }: { value: string }) => {
     const svgRef = useRef<SVGSVGElement>(null)
     const containerRef = useRef<HTMLDivElement>(null)
@@ -376,6 +428,14 @@ export default function BadgePreview({ badge, onClose, onEdit }: BadgePreviewPro
 
           {/* Action Buttons */}
           <div className="flex gap-3">
+            <Button
+              onClick={() => setShowMessageModal(true)}
+              variant="default"
+              className={`${onEdit ? 'flex-1' : 'flex-1'} bg-green-600 hover:bg-green-700`}
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Message
+            </Button>
             {onEdit && (
               <Button
                 onClick={() => {
@@ -401,13 +461,63 @@ export default function BadgePreview({ badge, onClose, onEdit }: BadgePreviewPro
             <Button
               onClick={onClose}
               variant="outline"
-              className={`${onEdit ? 'flex-1' : 'w-full'} text-gray-700 hover:bg-gray-50`}
+              className={`${onEdit ? 'flex-1' : 'flex-1'} text-gray-700 hover:bg-gray-50`}
             >
               Close
             </Button>
           </div>
         </div>
       </DialogContent>
+
+      {/* Text Message Modal */}
+      <Dialog open={showMessageModal} onOpenChange={() => setShowMessageModal(false)}>
+        <DialogContent className="sm:max-w-2xl bg-white max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-green-600" />
+              Mensaje de Texto
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4 border">
+              <pre className="whitespace-pre-wrap text-sm text-gray-800 font-sans leading-relaxed">
+                {generateTextMessage()}
+              </pre>
+            </div>
+            
+            <div className="flex gap-3">
+              <Button
+                onClick={copyToClipboard}
+                className={`flex-1 transition-colors ${
+                  copied 
+                    ? 'bg-green-600 hover:bg-green-700' 
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    ¡Copiado!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar Texto
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => setShowMessageModal(false)}
+                variant="outline"
+                className="flex-1 text-gray-700 hover:bg-gray-50"
+              >
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }

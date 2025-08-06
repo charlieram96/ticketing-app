@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
           email: badge.email,
           department: badge.department,
           type: badge.type,
-          days: badge.days
+          days: badge.days,
+          companion: badge.companion
         })
       } else {
         notFound.push(badgeId)

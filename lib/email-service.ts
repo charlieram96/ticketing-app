@@ -38,6 +38,7 @@ export interface BadgeEmailData {
   department: string
   type: 'Badge' | 'Multiday Badge'
   days: number[]
+  companion?: string
 }
 
 // ───────────────────────────────────────────────────────────
@@ -393,7 +394,7 @@ export class EmailService {
               </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="f758d404-9b02-4e87-937f-cccaa46787a6" data-mc-module-version="2019-10-22">
                 <tbody>
                   <tr>
-                    <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Estimado hermano ${badge.name},
+                    <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Estimado hermano(a) ${badge.name},
                         <br><br>
                         En este mensaje le estamos enviando un código de barras que deberá ser escaneado para poder entrar a la Tarde de Esparcimiento como voluntario.
                         <br><br>
@@ -415,6 +416,7 @@ export class EmailService {
                         <br><br>
                         <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
                           <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Departamento:</strong> <span style="color: #273159; font-size: 16px;">${badge.department}</span>
+                          ${badge.type === 'Multiday Badge' && badge.companion ? `<br><br><strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Acompañante:</strong> <span style="color: #273159; font-size: 16px;">${badge.companion}</span>` : ''}
                         </div>
                         <strong style="color: #0088ad; font-size: 16px; background-color: #f0f8ff; padding: 8px 12px; border-radius: 4px; display: inline-block;">${validDaysText}</strong></span></div><div></div></div></td>
                   </tr>
