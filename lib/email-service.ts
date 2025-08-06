@@ -398,9 +398,9 @@ export class EmailService {
                         src="${barcodeUrl}"
                         alt="Código de barras ${badge.badgeId}"
                         title="Código de barras ${badge.badgeId}"
-                        style="display:block"
-                        width="737"
-                        height="80"
+                        style="display:block; max-width:100%; height:auto;"
+                        width="400"
+                        height="43"
                         border="0"
                       />
                     </td>
