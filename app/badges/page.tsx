@@ -1082,29 +1082,31 @@ export default function BadgesPage() {
 
       {/* Email Confirmation Modal */}
       <Dialog open={showEmailModal} onOpenChange={() => setShowEmailModal(false)}>
-        <DialogContent className="sm:max-w-lg bg-white max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-lg sm:max-w-lg bg-white max-h-[90vh] overflow-y-auto mx-4">
           <DialogHeader>
-            <DialogTitle className="text-gray-900 flex items-center gap-2">
-              <Mail className="h-5 w-5 text-blue-600" />
-              Send Badge Emails
+            <DialogTitle className="text-gray-900 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <div className="flex items-center gap-2">
+                <Mail className="h-5 w-5 text-blue-600" />
+                <span className="text-base sm:text-lg">Send Badge Emails</span>
+              </div>
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="text-sm text-gray-600">
-              You are about to send badge barcode emails to {selectedBadgeIds.length} recipients.
+              You are about to send badge barcode emails to <span className="font-semibold">{selectedBadgeIds.length}</span> recipients.
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto">
+            <div className="bg-gray-50 rounded-lg p-3 sm:p-4 max-h-48 overflow-y-auto">
               <div className="text-sm font-medium text-gray-700 mb-2">Recipients:</div>
               <div className="space-y-2">
                 {selectedBadgeIds.map(badgeId => {
                   const badge = badges.find(b => b.badgeId === badgeId)
                   return badge ? (
-                    <div key={badgeId} className="flex items-center justify-between text-xs bg-white px-2 py-1 rounded">
-                      <span className="font-mono">{badgeId}</span>
-                      <span>{badge.name}</span>
-                      <span className="text-blue-600">{badge.email}</span>
+                    <div key={badgeId} className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs bg-white p-2 rounded gap-1 sm:gap-2">
+                      <span className="font-mono text-gray-800">{badgeId}</span>
+                      <span className="font-medium text-gray-900">{badge.name}</span>
+                      <span className="text-blue-600 break-all">{badge.email}</span>
                     </div>
                   ) : null
                 })}
@@ -1112,7 +1114,7 @@ export default function BadgesPage() {
             </div>
 
             {emailResults && (
-              <div className={`p-4 rounded-lg ${emailResults.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+              <div className={`p-3 sm:p-4 rounded-lg ${emailResults.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                 {emailResults.success ? (
                   <div>
                     <div className="text-green-800 font-medium mb-2">✅ Email Results</div>
@@ -1125,17 +1127,17 @@ export default function BadgesPage() {
                 ) : (
                   <div>
                     <div className="text-red-800 font-medium mb-2">❌ Error</div>
-                    <div className="text-sm text-red-700">{emailResults.error}</div>
+                    <div className="text-sm text-red-700 break-words">{emailResults.error}</div>
                   </div>
                 )}
               </div>
             )}
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Button
                 onClick={handleSendEmails}
                 disabled={isEmailSending || selectedBadgeIds.length === 0}
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 order-2 sm:order-1"
               >
                 {isEmailSending ? (
                   <>
@@ -1144,12 +1146,14 @@ export default function BadgesPage() {
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       className="mr-2 h-4 w-4 rounded-full border-2 border-blue-300 border-t-white"
                     />
-                    Sending...
+                    <span className="hidden sm:inline">Sending...</span>
+                    <span className="sm:hidden">Sending</span>
                   </>
                 ) : (
                   <>
                     <Send className="mr-2 h-4 w-4" />
-                    Send {selectedBadgeIds.length} Emails
+                    <span className="hidden sm:inline">Send {selectedBadgeIds.length} Emails</span>
+                    <span className="sm:hidden">Send ({selectedBadgeIds.length})</span>
                   </>
                 )}
               </Button>
@@ -1159,7 +1163,7 @@ export default function BadgesPage() {
                   setEmailResults(null)
                 }}
                 variant="outline"
-                className="flex-1"
+                className="flex-1 order-1 sm:order-2"
                 disabled={isEmailSending}
               >
                 {emailResults ? 'Close' : 'Cancel'}
