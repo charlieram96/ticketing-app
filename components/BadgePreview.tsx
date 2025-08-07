@@ -265,6 +265,20 @@ Fort Lauderdale, FL.`
                   {badge.department}
                 </Badge>
               </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Email:</span>
+                <span className="text-sm text-blue-600 break-all max-w-[200px]">
+                  {badge.email || <span className="text-gray-400 italic">No email</span>}
+                </span>
+              </div>
+              {badge.phone && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Phone:</span>
+                  <span className="text-sm text-green-600">
+                    {badge.phone}
+                  </span>
+                </div>
+              )}
               {badge.companion && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Acompañante:</span>
