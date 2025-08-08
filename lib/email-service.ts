@@ -344,11 +344,6 @@ export class EmailService {
                                                 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;" align="center">
                                                   <tr>
                                                     <td role="modules-container" style="padding:0px 0px 0px 0px; color:#000000; text-align:left;" bgcolor="#ffffff" width="100%" align="left"><table class="module preheader preheader-hide" role="module" data-type="preheader" border="0" cellpadding="0" cellspacing="0" width="100%" style="display: none !important; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">
-                <tr>
-                  <td role="module-content">
-                    <p>Corrección sobre el día viernes 8 de Agosto – Departamento de Alimentos</p>
-                  </td>
-                </tr>
               </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7657ff89-b997-4619-aff2-72eeece02494" data-mc-module-version="2019-10-22">
                 
               </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:20px 0px 20px 0px;" bgcolor="#ffffff" data-distribution="1">
@@ -395,9 +390,11 @@ export class EmailService {
                       <span style="color: #273159; font-size: 16px; font-family: 'lucida sans unicode', 'lucida grande', sans-serif">
                         Hola hermano(a)s,
                         <br><br>
-                        Queremos informarle que <em>incorrectamente</em> le añadimos a la mayoría de los voluntarios que están trabajando en el departamento de <b>Alimentos</b> el día viernes 8 de Agosto como uno de los días que estarán trabajando. Si su overseer no le pidió trabajar el viernes 8 de Agosto y no tiene un ticket, por favor no vaya al salón de asamblea de West Palm Beach pues no se le permitirá la entrada.
+                        Queremos informarles que, por error, se añadió el día viernes 8 de agosto como día de asignación para la mayoría de los voluntarios del departamento de Alimentos.
                         <br><br>
-                        Cualquier pregunta que tengan, por favor respondan directamente a este email.
+                        Si su overseer no le pidió trabajar ese día y no tiene un ticket para el viernes, por favor no se presente en el Salón de Asamblea de West Palm Beach, ya que no se le permitirá la entrada.
+                        <br><br>
+                        Si tienen alguna pregunta, no duden en responder directamente a este correo electrónico.
                       </span>
                     </div>
                   </td>
@@ -531,7 +528,7 @@ export class EmailService {
         bcc: this.bccEmail, // BCC charlie@fll2025.com for record keeping
         from: { email:this.fromEmail, name:this.fromName },
         replyTo: 'ticketing@fll2025.com', // Use replyTo instead of reply_to
-        subject: `Tu entrada Fort Lauderdale 2025 - ${badge.badgeId}`, // More specific subject with badge ID
+        subject: `Corrección sobre el día viernes 8 de Agosto – Departamento de Alimentos`, // More specific subject with badge ID
         text: this.createPlainText(badge),
         html: htmlContent,
         // No attachments needed since barcode is hosted on S3
