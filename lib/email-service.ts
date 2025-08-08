@@ -388,7 +388,7 @@ export class EmailService {
                   <td style="padding:40px 20px 18px 20px; line-height:28px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content">
                     <div style="font-family: inherit; text-align: left">
                       <span style="color: #273159; font-size: 16px; font-family: 'lucida sans unicode', 'lucida grande', sans-serif">
-                        Hola hermano(a)s,
+                        Hola hermanos,
                         <br><br>
                         Queremos informarles que, por error, se añadió el día viernes 8 de agosto como día de asignación para la mayoría de los voluntarios del departamento de Alimentos.
                         <br><br>
