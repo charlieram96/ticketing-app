@@ -274,9 +274,25 @@ Fort Lauderdale, FL.`
               {badge.phone && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Phone:</span>
-                  <span className="text-sm text-green-600">
-                    {badge.phone}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-green-600">
+                      {badge.phone}
+                    </span>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(badge.phone!)
+                          // Optional: Add visual feedback here
+                        } catch (err) {
+                          console.error('Failed to copy phone number:', err)
+                        }
+                      }}
+                      className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded"
+                      title="Copy phone number"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               )}
               {badge.companion && (
@@ -445,10 +461,22 @@ Fort Lauderdale, FL.`
             <Button
               onClick={() => setShowMessageModal(true)}
               variant="default"
-              className={`${onEdit ? 'flex-1' : 'flex-1'} bg-green-600 hover:bg-green-700`}
+              className="flex-1 bg-green-600 hover:bg-green-700"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               Message
+            </Button>
+            <Button
+              onClick={copyToClipboard}
+              variant="outline"
+              className="bg-gray-50 hover:bg-gray-100 text-gray-700 px-3"
+              title="Copy message to clipboard"
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-green-600" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
             </Button>
             {onEdit && (
               <Button
@@ -475,7 +503,7 @@ Fort Lauderdale, FL.`
             <Button
               onClick={onClose}
               variant="outline"
-              className={`${onEdit ? 'flex-1' : 'flex-1'} text-gray-700 hover:bg-gray-50`}
+              className="flex-1 text-gray-700 hover:bg-gray-50"
             >
               Close
             </Button>
