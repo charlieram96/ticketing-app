@@ -346,7 +346,7 @@ export class EmailService {
                                                     <td role="modules-container" style="padding:0px 0px 0px 0px; color:#000000; text-align:left;" bgcolor="#ffffff" width="100%" align="left"><table class="module preheader preheader-hide" role="module" data-type="preheader" border="0" cellpadding="0" cellspacing="0" width="100%" style="display: none !important; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">
                 <tr>
                   <td role="module-content">
-                    <p>Tu entrada Fort Lauderdale 2025 - ${badge.badgeId} - ${validDaysText}</p>
+                    <p>Corrección sobre el día viernes 8 de Agosto – Departamento de Alimentos</p>
                   </td>
                 </tr>
               </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7657ff89-b997-4619-aff2-72eeece02494" data-mc-module-version="2019-10-22">
@@ -386,83 +386,25 @@ export class EmailService {
                     </td>
                   </tr>
                 </tbody>
-              </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="b35b8ff4-8b3c-4b35-9ed3-f9f25170affc" data-mc-module-version="2019-10-22">
-                <tbody>
-                  <tr>
-                    <td style="padding:40px 20px 18px 20px; line-height:28px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: center"><span style="color: #0088ad; font-size: 28px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif"><strong>¡Bienvenido!</strong></span></div>
-            <div style="font-family: inherit; text-align: center"><span style="color: #0088ad; font-size: 14px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Fort Lauderdale 2025</span></div><div></div></div></td>
-                  </tr>
-                </tbody>
-              </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="f758d404-9b02-4e87-937f-cccaa46787a6" data-mc-module-version="2019-10-22">
-                <tbody>
-                  <tr>
-                    <td style="padding:38px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: left"><span style="color: #273159; font-size: 16px; font-family: &quot;lucida sans unicode&quot;, &quot;lucida grande&quot;, sans-serif">Estimado hermano(a) ${badge.name},
+              </table>
+             <table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="b35b8ff4-8b3c-4b35-9ed3-f9f25170affc" data-mc-module-version="2019-10-22">
+              <tbody>
+                <tr>
+                  <td style="padding:40px 20px 18px 20px; line-height:28px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content">
+                    <div style="font-family: inherit; text-align: left">
+                      <span style="color: #273159; font-size: 16px; font-family: 'lucida sans unicode', 'lucida grande', sans-serif">
+                        Hola hermano(a)s,
                         <br><br>
-                        En este mensaje le estamos enviando un código de barras que deberá ser escaneado para poder entrar a la Tarde de Esparcimiento como voluntario.
+                        Queremos informarle que <em>incorrectamente</em> le añadimos a la mayoría de los voluntarios que están trabajando en el departamento de <b>Alimentos</b> el día viernes 8 de Agosto como uno de los días que estarán trabajando. Si su overseer no le pidió trabajar el viernes 8 de Agosto y no tiene un ticket, por favor no vaya al salón de asamblea de West Palm Beach pues no se le permitirá la entrada.
                         <br><br>
-                        El evento se llevará a cabo en el Salon de Asamblea de West Palm Beach y la entrada será por Congress Avenue. 
-                        <br><br>
-                        Favor de verificar que la información y los días estén correctos. Si no lleva este código, se le podrá denegar la entrada. 
-                        <br><br>
-                        Muchas gracias por todo su duro trabajo a favor de los intereses del Reino. 
-                        <br><br>
-                        Sus hermanos,
-                        <br><br>
-                        Comite de Hospitalidad
-                        <br>
-                        Asamblea Especial
-                        <br>
-                        “Adoracion pura”
-                        <br>
-                        Fort Lauderdale, FL. 
-                        <br><br>
-                        <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                          <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Departamento:</strong> <span style="color: #273159; font-size: 16px;">${badge.department}</span>
-                          ${badge.type === 'Multiday Badge' && badge.companion ? `<br><br><strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Acompañante:</strong> <span style="color: #273159; font-size: 16px;">${badge.companion}</span>` : ''}
-                        </div>
-                        <strong style="color: #0088ad; font-size: 16px; background-color: #f0f8ff; padding: 8px 12px; border-radius: 4px; display: inline-block;">${validDaysText}</strong></span></div><div></div></div></td>
-                  </tr>
-                </tbody>
-              </table><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="3757586a-ce69-48ba-bd9a-0c0b7937a616">
-                  <tbody>
-                    <tr>
-                    <td style="padding:18px 60px 18px 60px; line-height:26px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content">
-                    <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                      <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Validez de su entrada:</strong><br><br>
-                      <span style="font-size: 16px; line-height: 24px;">${this.formatValidDaysWithDates(badge)}</span>
+                        Cualquier pregunta que tengan, por favor respondan directamente a este email.
+                      </span>
                     </div>
-                    <strong style="color: #0088ad; font-size: 16px; font-weight: bold;">Ubicación del evento:</strong><br>
-                    West Palm Beach Christian Convention Center of Jehovah's Witnesses<br>
-                    Dirección: 1610 Palm Beach Lakes Blvd, West Palm Beach, FL 33401
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding:20px 20px 60px 20px;" valign="top" align="center">
-                      <div style="background-color:#f8f8f8; padding:20px; border-radius:8px; display:inline-block; max-width:100%;">
-                        <img
-                          src="${barcodeUrl}"
-                          alt="Código de barras ${badge.badgeId}"
-                          width="600" height="65"
-                          style="display:block; width:100%; max-width:500px; height:auto; border:0; margin:0 auto;"
-                        />
-                        <div style="text-align:center; margin-top:10px; font-family:monospace; font-size:14px; color:#333;">
-                          ${badge.badgeId}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  
+                  </td>
                 </tr>
-                </tbody>
-                </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:30px 20px 0px 20px;" bgcolor="#ffffff" data-distribution="1">
-                <tbody>
-                  <tr role="module-content">
-                    <td height="100%" valign="top"><table width="560" style="width:560px; border-spacing:0; border-collapse:collapse; margin:0px 0px 0px 0px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="" class="column column-0">
-                  <tbody>
-                    <tr>
-                      <td style="padding:0px;margin:0px;border-spacing:0;"><table class="wrapper" role="module" data-type="image" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="e763c2de-823c-4c4a-addc-a1f84fc2c8a0">
-                
-              </table></td>
+              </tbody>
+            </table>
+            </td>
                     </tr>
                   </tbody>
                 </table></td>
