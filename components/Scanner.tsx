@@ -45,6 +45,7 @@ export default function Scanner({ onScanResult }: ScannerProps) {
   const isSafariMobile = typeof window !== 'undefined' && /Safari/.test(navigator.userAgent) && /Mobile/.test(navigator.userAgent)
   const isHTTPS = typeof window !== 'undefined' && window.location.protocol === 'https:'
   const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  const isIOS = typeof window !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent)
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const scannerElementRef = useRef<HTMLDivElement>(null)
   const isProcessingRef = useRef(false)
@@ -61,17 +62,22 @@ export default function Scanner({ onScanResult }: ScannerProps) {
       console.log('Starting scanner with facingMode:', facingMode)
       setScannerError(null) // Clear any previous errors
       
+      // Dynamic qrbox function - 80% of the shorter edge with 2:1 ratio
+      const qrbox = (vw: number, vh: number) => {
+        const w = Math.floor(Math.min(vw, vh) * 0.8)
+        return { width: w, height: Math.floor(w / 2) }
+      }
+
       const config = {
         fps: 10,
-        qrbox: { width: 320, height: 160 },
+        qrbox,                     // Dynamic instead of fixed 320×160
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-        aspectRatio: 1.0,
+        aspectRatio: 4 / 3,        // Default for most phone cameras
         showTorchButtonIfSupported: false,
         showZoomSliderIfSupported: false,
         defaultZoomValueIfSupported: 1,
-        useBarCodeDetectorIfSupported: true,
         experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true
+          useBarCodeDetectorIfSupported: !isIOS   // Disable on iOS 17+
         },
         // Enhanced camera constraints with autofocus
         videoConstraints: {
